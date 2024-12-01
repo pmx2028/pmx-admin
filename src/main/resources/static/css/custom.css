@@ -1,0 +1,647 @@
+
+
+/* body{font-family:Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", "Noto Sans KR", sans-serif; font-weight:300;} */
+/* body {
+    overflow-y: overlay;
+} */
+body{
+    font-size: 0.775rem !important;
+}
+
+.hidden{
+    display: none !important;
+}
+
+.btn{font-weight:500;}
+.btn-float {
+    padding: 1rem 0.65rem;
+}
+.table td, .table th{
+    padding: 0.25rem 0.5rem;
+}
+.navbar-brand {margin-right:0;padding-top:0.75rem;padding-bottom:0.75rem;}
+.navbar-brand img {height:1.5rem !important;}
+
+.navbar-light .navbar-nav-highlight .navbar-nav-link.active:before {background-color: #EF5350;}
+
+.page-title {padding:1.25rem 0;}
+
+.validation-invalid-label {font-size:0.75rem;padding-left:1.25rem;margin-top:0.25rem;margin-bottom:0.25rem;}
+.validation-invalid-label:before {font-size:0.75rem;padding-left:0.25rem;}
+
+/* inputbox, textarea placeholder 나타나고, 클릭시 사라지게하는 css*/
+input:focus::-webkit-input-placeholder,
+textarea:focus::-webkit-input-placeholder { /* WebKit browsers */
+  color:transparent;
+}
+
+input:focus:-moz-placeholder,
+textarea:focus:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+  color:transparent;
+}
+
+input:focus::-moz-placeholder,
+textarea:focus::-moz-placeholder { /* Mozilla Firefox 19+ */
+  color:transparent;
+}
+
+input:focus:-ms-input-placeholder,
+textarea:focus:-ms-input-placeholder { /* Internet Explorer 10+ */
+  color:transparent;
+}
+
+input[type="date"]::-webkit-clear-button, input[type="date"]::-webkit-inner-spin-button { 
+    display: none; 
+   } 
+   
+/* top menu out-link icon 조정 */
+.icon-new-tab, .top-menu{
+    font-size: 0.7rem;
+    font-weight: normal;
+    margin-bottom: 0.7rem;
+    color: #ff7043;
+}
+/* [신규] page-header fixed */
+.fixed-header {
+    position: fixed;
+    z-index: 1;
+    width: 100%;
+}
+
+/* content padding 조정 */
+.content{
+    padding: 0.5rem 0.6rem 0 0.6rem;
+}
+
+.content-frame{
+    padding: 0.1rem;
+}
+
+/* sidebar width 조정 */
+.sidebar{
+    width: 11rem;
+}
+
+/* sidebar top padding 조정 */
+.nav-sidebar .nav-item:not(.nav-item-header):first-child {
+    padding-top: 0rem;
+}
+
+/* pagenation margin 조정 */
+.dataTables_paginate{
+    margin: 0rem;
+}
+
+/* fa font awesome size 조정 */
+.fa {
+    font-size: 1.3rem;
+}
+
+/* card-body padding 조정 */
+.card-body {
+    padding: 0.5rem;
+}
+
+/* card-header padding 조정 */
+.card-header, .card-header:not([class*=bg-]):not([class*=alpha-]){
+    padding-top: 0.5rem;
+    padding-bottom: 0rem;
+}
+
+/* sidebar overflow-y auto 조정 */
+.sidebar:not(.sidebar-component) .sidebar-content {
+    overflow-y: auto;
+}
+
+/* form-row margin 조정 */
+.form-group {
+    margin-bottom: 0.5rem;
+}
+
+/* form-control padding 조정 */
+.form-control {
+    padding: 0.4375rem;
+}
+
+/* form-control focus되었을 때 bg 적용 */
+.form-control:focus {
+    background:#eee;
+}
+
+/* legend margin-bottom 조정 */
+legend {
+    padding-bottom: 0.325rem;
+    margin-bottom: 0.625em;
+}
+
+/* page-header button용 padding 조정*/
+.fixed-header .table{
+    width: 87%;
+}
+
+.fixed-header .table td{
+    padding: 0rem;
+    padding-left:1.25rem;
+}
+
+.fixed-header .table .text-align-right{
+    text-align: right;
+}
+
+/* 작은버튼 폰트사이즈 100% 조정 */
+.badge{
+    font-size: 90%;
+}
+
+/*[신규] table > td align-right 추가 */
+.td-text-align-right{
+    text-align: right;
+}
+
+/*[신규] table > td 데이터 없을 경우 height 지정 추가 */
+.td-no-data-height-100{
+    height: 100px;
+    text-align: center;
+}
+
+/*[신규] table > td 데이터 없을 경우 height 지정 추가 */
+.no-data-height-100{
+    height: 100px;
+    align-self: center;
+}
+
+/*[신규] pagenation 작은 사이즈 추가 */
+.page-link-small{
+    font-size: 0.3rem;
+    padding: 0.2rem;
+    min-width: 1.5rem;
+}
+
+.fa-small{
+    font-size: 1rem;
+}
+
+/*[신규] flex align center  */
+.flex-align-self-center{
+    align-self: center;
+}
+
+/*[신규] iframe css */
+.frame-full {
+    width:100%;
+    border:1px solid #ddd;
+    height:100%;
+}
+
+/*[신규] 자간조정 -2px */
+.ls-minus-2px{
+    letter-spacing: -2px;
+}
+
+/*[신규] 자간조정 -1px */
+.ls-minus-1px{
+    letter-spacing: -1px;
+}
+
+/*[신규] comma type 텍스트 오른쪽 정렬 */
+.comma-type{
+    text-align:right;
+}
+
+/*[신규] comma dot type 텍스트 오른쪽 정렬 */
+.comma-dot-type{
+    text-align:right;
+}
+
+/*[신규] 검색시 하단 layer */
+.search-layer{
+    float:left;
+    list-style:none;
+    margin-top:5px;
+    padding:0;
+    min-width: 93%;
+    max-width: 93%;
+    max-height: 262px;
+    position: absolute;
+    z-index: 1;
+    overflow: auto;
+    /* background-color: #fff; */
+    background-clip: padding-box;
+    border: 1px solid rgba(0,0,0,.15);
+    border-radius: 0.25rem;
+    box-shadow: 0 0.25rem 0.5rem rgb(0 0 0 / 10%);
+}
+.search-layer li{
+    padding: 0.3rem; 
+    background: #f9f9f9; 
+}
+
+.search-layer li:hover{
+    background:#eee;
+    cursor: pointer;
+}
+
+/*[변경] 작은폰트 적용시 %조정 기존 : 90% */
+.badge{
+    font-size: 85%
+}
+
+.border-top-black {
+    border-top:1px solid #777;
+}
+
+.border-bottom-black {
+    border-bottom:1px solid #777;
+}
+
+.web-icons-require {
+    font-size: 0.5rem !important;
+    color: #f44336;
+    vertical-align: text-top;
+}
+
+/* jquery ui 에서 select 되었을 경우 bg, font 색상 적용 */
+.ui-state-active, .ui-widget-content .ui-state-active, .ui-widget-header .ui-state-active, a.ui-button:active, .ui-button:active, .ui-button.ui-state-active:hover {
+    background: #007fff;
+    color: #ffffff;
+}
+
+.ui-widget-content{
+    z-index: 1060;
+}
+
+/* left menu 1depth - top, bottom padding 줄이기 */
+.nav-sidebar .nav-link {
+    padding: 0.6rem 1.25rem; 
+}
+
+/* left menu 2depth - left, top, bottom padding 줄이기 */
+.nav-group-sub .nav-link {
+    padding: .425rem 1.25rem .425rem 2.5rem
+}
+
+/* left menu 2depth - icon과 text 사이 간격 줄이기 */
+.nav-sidebar .nav-link i {
+    margin-right: 0.8rem;
+    margin-top: .1875rem;
+    margin-bottom: .1875rem;
+    top: 0
+}
+
+/* [신규] text-red */
+.text-red-700{
+    color:red;
+    font-weight: 700;
+}
+
+/* [변경] multi select box */
+.dropdown-item.form-check .form-check-label{
+    padding: 0.2rem 0.5rem;
+    font-size: 13px;
+}
+
+/* [변경] multi select box */
+.multiselect-selected-text{
+    font-size: 13px;
+}
+
+/* [변경] multi select box */
+.multiselect:focus,.show>.multiselect.dropdown-toggle {
+    border-color: #cdcfd1
+}
+
+/* [변경] code tag 적용시 font-family 변경 */
+/* code{
+    font-family: "Noto Sans KR", Roboto,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
+} */
+/* [신규] height 21px 적용 */
+.height-21 {
+    height: 21px;
+}
+
+/* [신규] width 20px 적용 */
+.width-30{
+    width:30px;
+}
+
+/* [변경] 웹아이콘 "-" text 색상 변경 */
+.icon-diff-removed{
+    color: #f44336;
+}
+
+/* [신규] input type="date" 에 focus가 존재할 경우 달력 icon 안보이도록 함  */
+/* input[type="date"]:focus::-webkit-calendar-picker-indicator{
+    display: none;
+} */
+
+/* [신규] 회원구분별 bg 색상지정 */
+.btn-badge-COMPANY { /*기업회원 (베이직) */
+    width:100%;
+    background-color: #FD6081;
+    color: #ffffff;
+}
+
+.btn-badge-PREMIUM { /*기업회원 (프리미엄)*/
+    width:100%;
+    background-color: #8d43d1;
+    color: #ffffff;
+}
+
+.btn-badge-IR { /* IR회원 */
+    width:100%;
+    background-color: #00a300;
+    color: #ffffff;
+}
+
+.btn-badge-TRIAL { /* TRIAL */
+    width:100%;
+    background-color: #00aba9;
+    color: #ffffff;
+}
+
+.btn-badge-PERSONAL { /* 개인회원 */
+    width:100%;
+    background-color: #ab008f;
+    color: #ffffff;
+}
+
+.btn-badge-PROMOTION { /* 프로모션회원 */
+    width:100%;
+    background-color: #004aab;
+    color: #ffffff;
+}
+
+/* [신규] 상태구분별 bg 색상지정 */
+.btn-badge-USE, .btn-badge-DONE { /*사용중*/
+    width:100%;
+    background-color: #2d89ef;
+    color: #ffffff;
+}
+
+.btn-badge-WAITING { /* 사용예정 */
+    width:100%;
+    background-color: #25b372;
+    color: #ffffff;
+}
+
+.btn-badge-NOTHING { /* 미승인 */
+    width:100%;
+    background-color: #000000;
+    color: #ffffff;
+}
+
+.btn-badge-EXPIRY, .btn-badge-CANCEL, .btn-badge-CANCELED { /* 기간만료, 청약철회 */
+    width:100%;
+    background-color: #F44336;
+    color: #ffffff;
+}
+
+.btn-badge-PARTIAL_CANCELED { /* 기간만료 */
+    width:100%;
+    background-color: #FF7043;
+    color: #ffffff;
+}
+
+/* [신규] 상태구분별 border 색상지정 */
+.btn-badge-border-USE { /*사용중*/
+    width:100%;
+    border: 1px solid #2d89ef;
+    border-radius: 0.2rem;
+    color: #000000;
+}
+
+.btn-badge-border-USE:hover { /*사용중:hover*/
+    width:100%;
+    background-color: #2d89ef;
+    color: #ffffff;
+}
+
+.btn-badge-border-WAITING { /* 사용예정 */
+    width:100%;
+    border: 1px solid #25b372;
+    border-radius: 0.2rem;
+    color: #000000;
+}
+
+.btn-badge-border-WAITING:hover { /* 사용예정:hover */
+    width:100%;
+    background-color: #25b372;
+    color: #ffffff;
+}
+
+.btn-badge-border-NOTHING { /* 미승인 */
+    width:100%;
+    border: 1px solid #000000;
+    border-radius: 0.2rem;
+    color: #000000;
+}
+
+.btn-badge-border-NOTHING:hover { /* 미승인:hover */
+    width:100%;
+    background-color: #000000;
+    color: #ffffff;
+}
+
+.btn-badge-border-EXPIRY { /* 기간만료 */
+    width:100%;
+    border: 1px solid #F44336;
+    border-radius: 0.2rem;
+    color: #000000;
+}
+
+.btn-badge-border-EXPIRY:hover { /* 기간만료:hover */
+    width:100%;
+    background-color: #F44336;
+    color: #ffffff;
+}
+
+.btn-badge-border-SUM { /* 전체 */
+    width:100%;
+    border: 1px solid #7a7a7a;
+    border-radius: 0.2rem;
+    color: #000000;
+}
+
+.btn-badge-border-SUM:hover { /* 전체:hover */
+    width:100%;
+    background-color: #7a7a7a;
+    color:#ffffff
+}
+
+.btn-badge-border-TRIAL {
+    /* TRIAL */
+    width: 100%;
+    border: 1px solid #00aba9;
+    border-radius: 0.2rem;
+    color: #000000;
+}
+
+/* [신규] cert.key 계약 상태 버튼 */
+.btn-badge-ACTIVE { /* active */
+    width:100%;
+    background-color: #20a652;
+    color: #ffffff;
+}
+
+.btn-badge-NONACTIVE { /* non-active */
+    width:100%;
+    background-color: #a1a1a1;
+    color: #ffffff;
+}
+
+
+/* 버튼 정렬 */
+.justify-content-left {
+    -ms-flex-pack: left!important;
+    justify-content: left!important
+}
+
+.justify-content-right {
+    -ms-flex-pack: right!important;
+    justify-content: right!important
+}
+
+/*[변경] 왼쪽 상단 로고 width 조정 */
+@media (min-width: 992px) {
+    .navbar-expand-lg .navbar-brand {
+        min-width: 9.75rem;
+    }
+    
+    /* [추가] body content min-width 정의*/
+    .content {
+        min-width:1350px;
+    }
+}
+/*[신규] modal size 지정. 기본 사이즈는 600px */
+@media (min-width: 576px) {
+    .modal-dialog.modal-dialog-1000 {
+        max-width:1000px;
+    }
+    .modal-dialog.modal-dialog-800 {
+        max-width:800;
+    }
+}
+
+@page {
+    size: A4;
+    margin: 0;
+}
+    
+@media print {
+    html, body {
+        height: 297mm;
+        background:#fff;   
+        height: 257mm;
+    }
+    
+    .page {
+        margin: 0;
+        border: initial;
+        width: initial;
+        min-height: initial;
+        box-shadow: initial;
+        background: initial;
+        page-break-after: always;
+    }
+}
+
+@media (min-width: 768px){
+    .sidebar-expand-md {
+        margin-left: 0rem;
+        margin-right: 0rem;
+        margin-bottom: 0rem;
+    }
+
+    .sidebar-expand-md:not(.sidebar-component) {
+        position: static;
+        transition: none;
+    }
+
+    .sidebar-expand-md.sidebar-main {
+        z-index: 99;
+        box-shadow: none;
+    }
+}
+
+/*[신규] 로딩바 전체 layer 덮기 추가 start */
+/* loading layer show */
+.blurBackground.visible {
+    animation: showBackground 0.01s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+}
+
+/* loading background  css */
+.blurBackground {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1032;
+    position: fixed;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0,0,0,0.8);
+    transform: scale(0);
+    opacity: 0;
+}
+
+/* loading layer event css*/
+@keyframes showBackground{
+	0%{
+	transform:scale(0);
+	opacity:0
+	}
+	100%{
+	transform:scale(1);
+	opacity:1
+	}
+}
+
+/* loading icon layer css */
+.blurBackground .loading-circle {
+    position: relative;
+    width: 3rem;
+    height: 3rem;
+    justify-content: center;
+    color:#eee;
+}
+
+/* loading icon css */
+.blurBackground .loading-circle > i {
+    font-size: 3rem;
+    margin-right: 0.5rem;
+}
+
+/* loading layer text css */
+.blurBackground .loding-text{
+    color:#eee;
+    font-size: 2rem;
+    padding-left:1rem;
+}
+/* 로딩바 전체 layer 덮기 end*/
+
+/* cert.key 관리 */
+
+/* key 생성모달 css */
+.no-padding {
+    padding: 0 !important;
+}
+
+/* Data center 버튼 안보이게 */
+.display_none {
+    display: none
+}
+
+/* 일괄처리 버튼 */
+.batch-form-btn{
+    width: 100px;
+}
+
+
+/* comment box 크기 제한 */
+.comment-textarea{
+    max-height: 50vh !important;
+}
+
+.bg_light_grey, .bg_light_grey:hover {
+    background: #dedede !important;
+}

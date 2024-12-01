@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xml>
+
+<!-- 60초마다 설정 파일의 변경을 확인 하여 변경시 갱신 -->
+<configuration scan="true" scanPeriod="60 seconds">
+
+  <springProperty scope="context" name="LOG_LEVEL" source="logging.level.root"/>  <!-- log level -->
+  <springProperty scope="context" name="LOG_PATH" source="logging.file.path"/>  <!-- log file path -->
+  <springProperty scope="context" name="LOG_SQL" source="logging.level.org.hibernate.SQL"/>  <!-- log file path -->
+
+  <property name="LOG_FILE_NAME" value="tv_cms_log"/> <!-- log 파일명 -->
+  <property name="ERR_LOG_FILE_NAME" value="tv_cms_log_error"/><!-- err log 파일명 -->
+  <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger ${HOSTNAME} > %msg%n"/><!-- 로그 패턴 -->
+  <property name="MAX_DAY" value="7"/> <!-- 파일 보관일수 -->
+  <property name="MAX_SIZE" value="10MB"/> <!-- 파일 최대사이즈 -->
+
+  <!-- Console Appender -->
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <!-- By default, encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder -->
+    <encoder>
+      <pattern>%green(%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread{20}]) %highlight(%-5level) %cyan([%logger{50}:%line]) %green(${HOSTNAME}) - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <!-- File Appender -->
+  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <!-- 파일경로 설정 -->
+    <file>${LOG_PATH}/${LOG_FILE_NAME}.log</file>
+
+    <!-- 출력패턴 설정-->
+    <encoder>
+      <pattern>${LOG_PATTERN}</pattern>
+    </encoder>
+
+    <!-- Rolling 정책 -->
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <!-- .gz,.zip 등을 넣으면 자동 일자별 로그파일 압축 -->
+      <fileNamePattern>${LOG_PATH}/${LOG_FILE_NAME}_%d{yyyy-MM-dd}_%i.log</fileNamePattern>
+      <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+        <!-- 파일당 최고 용량 kb, mb, gb -->
+        <maxFileSize>${MAX_SIZE}</maxFileSize>
+      </timeBasedFileNamingAndTriggeringPolicy>
+
+      <!-- 일자별 로그파일 최대 보관주기(~일), 해당 설정일 이상된 파일은 자동으로 제거-->
+      <maxHistory>${MAX_DAY}</maxHistory>
+    </rollingPolicy>
+  </appender>
+
+  <!-- 에러의 경우 파일에 로그 처리 -->
+  <appender name="ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <filter class="ch.qos.logback.classic.filter.LevelFilter">
+      <level>error</level>
+      <onMatch>ACCEPT</onMatch>
+      <onMismatch>DENY</onMismatch>
+    </filter>
+    <file>${LOG_PATH}/${ERR_LOG_FILE_NAME}.log</file>
+    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+      <pattern>${LOG_PATTERN}</pattern>
+    </encoder>
+
+    <!-- Rolling 정책 -->
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <!-- .gz,.zip 등을 넣으면 자동 일자별 로그파일 압축 -->
+      <fileNamePattern>${LOG_PATH}/${ERR_LOG_FILE_NAME}_%d{yyyy-MM-dd}_%i.log</fileNamePattern>
+      <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+        <!-- 파일당 최고 용량 kb, mb, gb -->
+        <maxFileSize>${MAX_SIZE}</maxFileSize>
+      </timeBasedFileNamingAndTriggeringPolicy>
+      <!-- 일자별 로그파일 최대 보관주기(~일), 해당 설정일 이상된 파일은 자동으로 제거-->
+      <maxHistory>${MAX_DAY}</maxHistory>
+    </rollingPolicy>
+  </appender>
+
+  <!-- append level
+    trace : 모든 로그를 출력합니다.
+    debug : 개발할 때 디버그 용도로 사용됩니다.
+    info : 상태 변경 등과 같은 정보성 메세지를 나타냅니다.
+    warn : 프로그램의 실행에는 문제 없지만 추후 시스템에러의 원인이 될 수 있다는 경고성 메세지를 의미합니다.
+    error : 요청을 처리하던 도중 문제가 발생한 것을 의미합니다. -->
+
+  <!-- root레벨 설정 -->
+  <root level="${LOG_LEVEL}" >
+    <appender-ref ref="CONSOLE"/>
+    <appender-ref ref="FILE"/>
+    <appender-ref ref="ERROR"/>
+  </root>
+
+  <!-- ### log4jdbc 로그레벨 설정 ### -->
+  <!--
+    jdbc.sqltiming : SQL문과 해당 SQL을 실행시키는데 수행된 시간 정보(milliseconds)를 포함한다.
+    jdbc.resultsettable : SQL 결과 조회된 데이터의 table을 로그로 남긴다.
+    jdbc.sqlonly : SQL문만을 로그로 남기며, PreparedStatement일 경우 관련된 argument 값으로 대체된 SQL문이 보여진다.
+    jdbc.audit :    ResultSet을 제외한 모든 JDBC 호출 정보를 로그로 남긴다. 
+                    많은 양의 로그가 생성되므로 특별히 JDBC 문제를 추적해야 할 필요가 있는 경우를 제외하고는 사용을 권장하지 않는다. 
+    ResultSet을 포함한 모든 JDBC 호출 정보를 로그로 남기므로 매우 방대한 양의 로그가 생성된다.
+  -->
+  <!--  -->
+  <logger name="jdbc" level="OFF"/>
+  <logger name="jdbc.connection" level="OFF"/>
+  <logger name="jdbc.sqlonly" level="OFF"/>
+  <logger name="jdbc.audit" level="OFF"/>
+  <logger name="jdbc.resultset" level="OFF"/>
+  <logger name="jdbc.resultsettable" level="OFF"/>
+  <logger name="jdbc.sqltiming" level="${LOG_SQL}"/>
+</configuration>
