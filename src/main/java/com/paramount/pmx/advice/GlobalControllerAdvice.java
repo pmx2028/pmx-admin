@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
 @ControllerAdvice
-public class GlobalControllerAdvice { dddd
+public class GlobalControllerAdvice {
     @Value("${spring.profiles.active}")
     private String env;
 
