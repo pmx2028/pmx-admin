@@ -26,7 +26,7 @@ public class SearchTvVodsSpec {
         private final String value;
     }
 
-    //정렬 파라메터 키값 설정 설명 추가 설명 2
+    //정렬 파라메터 키값 설정 설명 추가 설명 3
     @AllArgsConstructor
     @Getter
     public enum SortingKey{
