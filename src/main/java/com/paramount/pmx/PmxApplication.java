@@ -30,7 +30,7 @@ public class PmxApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(PmxApplication.class, args);
         System.out.println("현재시각 : " + LocalDateTime.now());
-        System.out.println("String boot Start...............");
+        System.out.println("String boot Start.......................");
 	}
 
 }
