@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="kr" data-bs-theme="light" data-menu-color="dark" data-topbar-color="dark" >
+
+<head>
+    <meta charset="utf-8" />
+    <title>login | DealSite CMS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="A fully featured admin theme which can be used to build CRM, CMS, etc." name="description" />
+    <meta content="Coderthemes" name="author" />
+    <!-- favicon -->
+    <link rel="shortcut icon" href="/images/favicon.svg">
+
+    <!-- Theme Config Js -->
+    <script src="/js/config.js"></script>
+    <!-- App css -->
+    <link href="/css/app.css" rel="stylesheet" type="text/css" id="app-style" />
+    <!-- Icons css -->
+    <link href="/css/icons.min.css" rel="stylesheet" type="text/css" />
+    <!-- custom css  -->
+    <link href="/css/etc.css" rel="stylesheet" type="text/css" />
+    <!-- ios 확대 제어  -->
+    <link href="/css/ios-fix.css" rel="stylesheet" type="text/css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/ScrollToPlugin.min.js"></script>
+
+    <style>
+        .test-cms-notice {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1050;
+            width: 100%;
+            padding: 12px 16px;
+            background: #dc3545;
+            color: #fff;
+            text-align: center;
+            font-size: clamp(20px, 2.2vw, 30px);
+            font-weight: 700;
+            line-height: 1.5;
+            #animation: test-cms-notice-blink 1s step-end infinite;
+        }
+
+        .test-cms-notice a {
+            color: inherit;
+            text-decoration: underline;
+        }
+
+        @keyframes test-cms-notice-blink {
+            50% {
+                background: #ffc107;
+                color: #000;
+            }
+        }
+    </style>
+</head>
+
+<body class="authentication-bg position-relative" style="background: #000; overflow: hidden;">
+<!--div class="test-cms-notice" th:if="${activeProfile != 'prod'}">
+    테스트 PMX입니다. 아래 운영 CMS 사이트에 접속 후 사용해 주세요.<br>
+    <a href="https://cms.dealsite.co.kr">cms.dealsite.co.kr</a>
+</div-->
+
+<!-- bg -->
+<div class="position-absolute start-0 end-0 start-0 bottom-0 w-100 h-100 login-box">
+    <!-- wave -->
+    <svg width="100%" height="100%">
+        <defs>
+            <mask id="m"></mask>
+        </defs>
+        <use xlink:href="#txt2" x="50%" y="50%" transform="translate(-375 0)" />
+        <g mask="url(#m)">
+            <rect fill="#e4e4e4" width="100%" height="100%" />
+            <use xlink:href="#txt1" x="50%" y="50%" transform="translate(-375 0)" />
+        </g>
+    </svg><!--// wave -->
+    <!-- bg-color -->
+    <div class="test">
+        <div class="background_background__3Oeal">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </div><!--// bg-color -->
+    </div>
+
+</div><!--// bg -->
+
+<!-- account-page -->
+<div class="account-pages pt-2 pt-sm-5 pb-4 pb-sm-5 position-relative" style="z-index: 2;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-xxl-4 col-lg-5">
+                <div class="card">
+                    <!-- Logo -->
+                    <div class="card-header pt-4 pb-0 text-center">
+                        <div class="auth-brand mb-0">
+                            <a href="/" class="logo-dark">
+                                <span><img src="/images/logo-dark.png" alt="dark logo" height="28"></span>
+                            </a>
+                            <a href="/" class="logo-light">
+                                <span><img src="/images/logo.png" alt="logo" height="28"></span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        <form name="loginForm" id="loginForm" method="post">
+                            <div class="mb-3">
+                                <div class="input-group input-group-merge">
+                                    <div class="input-group-text" data-password="false">
+                                        <span class="ri-building-4-line"></span>
+                                    </div>
+                                    <select class="form-select" id="compCode" aria-label="매체 선택">
+                                        <!-- <option value="" disabled hidden>소속 회사를 선택해 주세요</option> -->
+                                        <option value="D00001" selected> 파라마운트</option>
+                                        <!-- <option value="D00002">딜사이트경제TV</option> -->
+                                        <!-- <option value="D00003">머니네버슬립</option> -->
+                                        <!-- <option value="D00004">딜사이트S</option> -->
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="input-group input-group-merge">
+                                    <div class="input-group-text" data-password="false">
+                                        <span class="ri-user-3-fill"></span>
+                                    </div>
+                                    <input class="form-control" type="text" id="login" required="" th:value="${saveid ?: ''}" placeholder="아이디를 입력해 주세요">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="input-group input-group-merge">
+                                    <div class="input-group-text" data-password="false">
+                                        <span class="ri-lock-2-fill"></span>
+                                    </div>
+                                    <input type="password" id="password" class="form-control" placeholder="비밀번호를 입력해 주세요">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check form-check-inline">
+                                    <input type="checkbox" class="form-check-input" name="saveid" id="saveid" th:checked="${saveid != null}">
+                                    <label class="form-check-label">아이디 저장</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input type="checkbox" class="form-check-input" name="autologin" id="autologin" th:checked="${autologin != null}">
+                                    <label class="form-check-label" for="autologin">자동로그인</label>
+                                </div>
+                            </div>
+
+                            <div class="mb-3 mb-0 d-grid gap-2">
+                                <button class="btn btn-danger rounded-pill" type="submit" id="loginBtn">로그인</button>
+                            </div>
+
+                        </form>
+                    </div> <!-- end card-body -->
+                </div>
+                <!-- end card -->
+
+            </div> <!-- end col -->
+        </div>
+        <!-- end row -->
+    </div>
+    <!-- end container -->
+</div><!--// account-page -->
+
+<footer class="footer footer-alt">
+    <span class="text-white-50"><script>document.write(new Date().getFullYear())</script> ⓒ ㈜딜사이트, All Rights Reserved. </span>
+</footer>
+
+<!-- Vendor js -->
+<script src="/js/vendor.min.js"></script>
+
+<!-- App js -->
+<script src="/js/app.min.js"></script>
+<script src="/js/common/mobile-breakpoint-alert.js"></script>
+
+<script th:inline="javascript">
+    const loginCode = /*[[${code}]]*/ null;
+
+    // 전역 변수 선언
+    var cw = window.innerWidth,
+        ch = window.innerHeight,
+        nWaves = 5,
+        waves = [],
+        amp = 10,
+        speed = 0.4,
+        detail = 30,
+        waveY = 0;
+
+    // SVG 요소 생성 및 초기 설정
+    for (var w = 0; w < nWaves; w++) {
+        var p = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+        waves.push(p);
+        document.getElementById('m').appendChild(p);
+
+        // GSAP을 사용하여 polygon의 속성(attr) 설정
+        gsap.set(p, {
+            attr: () => {
+                return (w == 0) ? {
+                    fill: '#fff'
+                } : {
+                    fill: 'none',
+                    stroke: '#fff',
+                    'stroke-dasharray': '2 4',
+                    'stroke-width': 3 - w / nWaves * 3
+                }
+            }
+        });
+    }
+
+    // GSAP 타임라인 설정
+    gsap.timeline({
+        defaults: {
+            duration: 1
+        },
+        delay: 0.9
+    })
+        .from('.txt1', {
+            opacity: 0,
+            ease: 'power2.inOut'
+        }, 0) // .txt1 요소의 초기 투명도를 0으로 설정하여 서서히 나타나게 함
+        .to(window, {
+            scrollTo: ch / 2
+        }, 0); // 창을 화면 높이의 절반까지 스크롤 (ScrollToPlugin 필요)
+
+    gsap.ticker.add(drawWave);
+
+    function drawWave(t) {
+        const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        if (waveY !== -currentScrollTop) {
+            gsap.to(window, {
+                duration: 1,
+                waveY: Math.round(currentScrollTop)
+            });
+        }
+
+        for (var k = 0; k < nWaves; k++) {
+            var p = waves[k],
+                offset = (1 - k / nWaves) * nWaves / 6,
+                pts = '';
+            for (var i = -1; i < (cw + detail); i += detail) {
+                var y = ch - waveY;
+                y += Math.sin(i * 0.003 - t / speed + offset) * amp;
+                y += Math.sin(i * 0.004 - t / speed + offset) * amp;
+                y += Math.sin(i * -0.011 - t / speed + 20 + offset) * amp;
+                pts += i.toFixed(2) + ',' + y.toFixed(2) + ' ';
+            }
+            gsap.set(p, {
+                attr: {
+                    points: '-20,-20 -20,' + ch / 2 + ' ' + pts + ' ' + cw + ',-20'
+                }
+            });
+        }
+    }
+
+    // 창 크기 조절 이벤트 리스너
+    window.addEventListener('resize', () => {
+        cw = window.innerWidth;
+        ch = window.innerHeight;
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        localStorage.removeItem('AUTO_LOGIN');
+        if (loginCode === 'L02') {
+            alert("세션이 만료되었거나 다른 기기에서 로그인되었습니다.\n" + "다시 로그인해 주세요.");
+            window.history.replaceState(null, '', '/login');
+        }
+
+        const form = document.getElementById('loginForm');
+        const loginInput     = form.login;
+        const passwordInput  = form.password;
+        const compCodeSelect  = form.compCode;
+        const saveIdCheckbox = form.saveid;
+        const autoLoginCheckbox = form.autologin;
+
+        /** 1. 첫 화면: 아이디 포커스 & 저장된 ID 복원 */
+        loginInput.focus();
+
+        const SAVED_ID_KEY = 'SAVEID_DC';
+        const savedId = localStorage.getItem(SAVED_ID_KEY);
+
+        const SAVED_CP_KEY = 'SAVEID_CP';
+        const savedComp = localStorage.getItem(SAVED_CP_KEY);
+
+        const AUTO_LOGIN_KEY = 'AUTO_LOGIN';
+        const savedAuto = localStorage.getItem(AUTO_LOGIN_KEY);
+
+
+        if (savedId) {
+
+            loginInput.value     = savedId;
+            compCodeSelect.value      = savedComp ?? '';
+            saveIdCheckbox.checked = true;
+        }
+
+        if (savedAuto) {
+            autoLoginCheckbox.checked = true;
+        }
+
+        /** 2. 입력 제약: 영대소문자·숫자·특수문자만, 한글/공백 제외 */
+        loginInput.addEventListener('input', () => {
+            // 허용 문자: a~z A~Z 0~9 !@#$%^&* 등
+            loginInput.value = loginInput.value.replace(/[^a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣!@#$%^&*()_\-+=.?]/g, '');
+        });
+
+        const loginBtn = document.querySelector('.btn-danger');
+        loginBtn.addEventListener('click', async (event) => {
+            event.preventDefault();  // 기본 form 제출 막기
+
+            // HTML5 기본 제약( required / minlength )이 실패하면 폼 자체가 막혀 있음
+            if (!form.reportValidity()) return;
+
+            // 아이디 저장 체크
+            if (saveIdCheckbox.checked) {
+                localStorage.setItem(SAVED_ID_KEY, loginInput.value.trim());
+                localStorage.setItem(SAVED_CP_KEY, compCodeSelect.value.trim());
+            } else {
+                localStorage.removeItem(SAVED_ID_KEY);
+                localStorage.removeItem(SAVED_CP_KEY);
+            }
+
+            if (autoLoginCheckbox.checked ) {
+                localStorage.setItem(AUTO_LOGIN_KEY, autoLoginCheckbox.value.trim());
+            } else {
+                localStorage.removeItem(AUTO_LOGIN_KEY);
+            }
+
+            const formData = new FormData();
+            formData.append('login',     loginInput.value.trim());
+            formData.append('password',  passwordInput.value.trim());
+            formData.append('compCode',  compCodeSelect.value.trim());
+            if (autoLoginCheckbox.checked) {
+                formData.append('autologin', autoLoginCheckbox.value.trim());
+            }
+
+            // if (!compCodeValue || !loginValue || !pwdValue) {
+            //     alert('소속회사와 아이디/비밀번호를 모두 입력해 주세요.');
+            //     form.login.focus();
+            //     return;
+            // }
+            try {
+                const resp   = await fetch('/signin', { method: 'POST', body: formData });
+                // HTTP 200이었더라도 success:false 일 수 있으므로 항상 JSON 파싱
+                const result = await resp.json();
+
+                if (result.success) {
+                    window.location.href = '/login/success';
+                } else {
+                    alert(result.message ?? '로그인 실패');
+                }
+            } catch (err) {
+                alert(`로그인 요청 실패\n${err}`);
+            }
+            /**
+             $.ajax({
+             url: "/signin",
+             type: "POST",
+             dataType: "JSON",
+             data : {
+             login: loginValue,
+             password: pwdValue,
+             compCode:compCodeValue
+             },
+
+             }).done(function (res) {
+             if (res.success) {
+             window.location = "/login/success";
+             } else {
+             alert(res.message);
+             }
+             }).fail(function (req, status, err) {
+             alert("로그인 요청 실패\ncode:" + req.status + "\nmessage:" + req.responseText + "\nerror:" + err);
+             });
+             */
+
+        });
+    });
+</script>
+
+</body>
+</html>

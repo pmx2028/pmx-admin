@@ -1,0 +1,230 @@
+spring:
+  application:
+    name: paramount-pmx
+    siteurl: "http://pmx.paramount.co.kr"
+
+  messages:
+    cache-duration: 3600
+    basename: "classpath:locale/messages"
+    encoding: "UTF-8"
+
+  servlet:
+    multipart:
+      max-file-size: 15MB
+      max-request-size: 30MB
+
+  datasource:
+    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    tomcat:
+      connection-properties: "useUnicode=true;characterEncoding=utf-8"
+
+  jmx:
+    enabled: true
+
+  jpa:
+    open-in-view: true
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    properties:
+      jakarta:
+        persistence:
+          query:
+            timeout: 10000
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: ""
+
+  session:
+    redis:
+      repository-type: indexed
+      flush-mode: immediate
+      namespace: "myapp:sess"
+      cleanup-cron: "0 */30 * * * *"
+
+  thymeleaf:
+    enabled: true
+    prefix: "classpath:/templates/"
+    suffix: ".html"
+    mode: HTML
+    encoding: "UTF-8"
+    cache: true
+    servlet:
+      content-type: "text/html"
+
+  output:
+    ansi:
+      enabled: always
+
+  mail:
+    host: smtp.mailplug.co.kr
+    port: 465
+    username: "news@dealsite.co.kr"
+    password: ${MAIL_NEWS_APP_PASSWORD}
+    default-encoding: "UTF-8"
+    properties:
+      mail:
+        debug: false
+        smtp:
+          starttls:
+            enable: true
+          auth: true
+          socketFactory:
+            class: javax.net.ssl.SSLSocketFactory
+        smtps:
+          ssl:
+            checkserveridentity: true
+          ssl.trust: "*"
+
+  task:
+    scheduling:
+      thread:
+        pool:
+          # 스케줄링 태스크를 실행할 스레드 풀의 크기
+          size: 5
+
+server:
+  compression:
+    enabled: true
+  tomcat:
+    mbeanregistry:
+      enabled: true
+  forward-headers-strategy: native
+
+  error:
+    include-exception: true
+    include-stacktrace: ALWAYS
+    path: /error
+    whitelabel:
+      enabled: false
+
+  servlet:
+    context-path: /
+    session:
+      timeout: 8h
+      cookie:
+        path: /
+        name: JSESSIONID
+        http-only: true
+        secure: true
+        same-site: lax
+        # 8시간 = 28800초 (초 단위 설정)
+        max-age: 28800
+
+logging:
+  config: "classpath:logback-spring.xml"
+  file:
+    path: logs
+  level:
+    p6spy: OFF
+    root: INFO
+    # RequestLoggingFilter 로그
+    com.paramount.pmx.logging.RequestLoggingFilter: INFO
+    org:
+      springframework: WARN
+      springframework.web: WARN
+      springframework.web.servlet.DispatcherServlet: DEBUG
+      springframework.web.servlet.handler.SimpleUrlHandlerMapping: WARN
+      springframework.web.servlet.resource: WARN
+      springframework.web.servlet.mvc.method.annotation: INFO
+      hibernate:
+        SQL: OFF
+        type:
+          descriptor:
+            sql:
+              BasicBinder: OFF
+        orm:
+          jdbc:
+            bind: OFF
+        engine:
+          internal:
+            StatisticalLoggingSessionEventListener: OFF
+      thymeleaf: INFO
+      thymeleaf.standard: INFO
+      thymeleaf.inline: INFO
+
+cloud:
+  aws:
+    credentials:
+      accessKey: ${AWS_ACCESS_KEY}
+      secretKey: ${AWS_SECRET_KEY}
+    stack:
+      auto: false
+    region:
+      static: ap-northeast-2
+    s3:
+      bucket: assets.paxnetnews.com
+      url: "https://dtd31o1ybbmk8.cloudfront.net"
+
+paramount:
+  security:
+    rememberme-cookiename: RSESSIONID_DC
+
+article:
+  massindex:
+    key: ${ARTICLE_MASSINDEX_KEY}
+  office:
+    address: "1.220.42.18"
+
+editor:
+  auto-save-interval-ms: 60000
+
+# 유튜브 썸네일 추출시 사용됨
+google:
+  api:
+    key: ${GOOGLE_API_KEY}
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    prometheus:
+      enabled: true
+  metrics:
+    enable:
+      hibernate: true
+
+gemini:
+  api-key: ${GEMINI_API_KEY}
+
+krx:
+  api-key: ${KRX_API_KEY}
+
+# 전송 gateway 호출
+trans:
+  gateway-url : "http://10.0.1.31:2063/api/gateway" # 개발
+  api-key: ${TRANS_API_KEY}
+
+
+# front url
+front-url:
+  dealsite: https://paramount.co.kr
+
+
+# 메일 발송 관련 설정
+# TODO: 실제 prod 배포시 whiteList.enabled : false로 변경해줘야함
+notification:
+  email:
+    from:
+      name: Dealsite
+    # 메일 발송 화이트리스트 설정 (주로 dev / stage 환경용)
+    whitelist:
+      # true 인 경우, 아래 addresses 에 포함된 이메일로만 메일 발송
+      # false 이면 화이트리스트 필터링 없이 전체 발송
+      enabled: true
+      # 화이트리스트 이메일 목록 (콤마로 구분)
+      # 예: a@dealsite.co.kr,b@dealsite.co.kr
+      addresses:
+
+file-path:
+  hit-snapshot: "/opt/www/snapshots/total_cms_hits_count_snapshot.json"
+  topbar-chart-snapshot: "/opt/www/snapshots/total_cms_topbar_chart_snapshot.json"

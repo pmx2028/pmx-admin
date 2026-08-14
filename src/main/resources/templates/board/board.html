@@ -1,0 +1,246 @@
+<!--
+  페이지 작성 시 해당 페이지 구조를 복사해서 사용하면 됩니다.
+-->
+<!DOCTYPE html>
+<th:block
+        th:replace="~{layout/base-layout :: base-layout(
+            pageContent=~{::pageContent},
+            pageHead=~{::pageHead},
+            pageModal=~{::pageModal},
+            pageScript=~{::pageScript},
+            title=${boardName},
+            subtitle='게시판'
+        )}">
+
+    <!-- head block -->
+    <th:block th:fragment="pageHead">
+        <!-- 여기에 추가적으로 필요한 head 내용을 넣습니다. -->
+        <!-- Daterangepicker css -->
+        <link href="/vendor/daterangepicker/daterangepicker.css" rel="stylesheet" type="text/css" />
+
+        <!-- Datatables css -->
+        <link href="/vendor/datatables.net-bs5/css/dataTables.bootstrap5.min.css" rel="stylesheet" type="text/css" />
+        <link href="/vendor/datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css" rel="stylesheet" type="text/css" />
+
+        <!-- ckeditor css -->
+        <link rel="stylesheet" href="/vendor/ckeditor5/ckeditor5.css">
+
+        <!-- custom css -->
+        <link href="/css/board.css" rel="stylesheet" type="text/css" />
+        <link href="/css/custom-ckeditor.css" rel="stylesheet" type="text/css" />
+        <meta name="board_id" th:content="${code}">
+
+        <!-- ckEditor js -->
+        <script type="importmap">
+            {
+                "imports": {
+                    "ckeditor5": "../../static/vendor/ckeditor5/ckeditor5.js",
+                    "ckeditor5/": "../../static/vendor/ckeditor5/"
+                }
+            }
+        </script>
+    </th:block>
+
+    <!-- content block -->
+    <th:block th:fragment="pageContent">
+        <!-- 여기에 페이지 본문 내용을 넣습니다. -->
+        <!-- row -->
+        <div class="row">
+            <!-- col -->
+            <div class="col-12 mobile-p0">
+                <!-- card -->
+                <div class="card">
+                    <!-- card body -->
+                    <div class="card-body p-2">
+                        <form>
+                            <!-- 버튼 & 검색 -->
+                            <div class="border-bottom board-data mb-2">
+                                <div class="row">
+                                    <!-- 버튼 -->
+                                    <div class="col-12 col-sm-3 col-md-auto col-lg-2">
+                                        <button id="createBtn" type="button" class="btn btn-primary" data-mode="create">
+                                            <i class="ri-edit-fill"></i><span> 게시글쓰기</span>
+                                        </button>
+                                    </div><!--// 버튼 -->
+
+                                    <!-- 검색 -->
+                                    <div class="col-12 col-sm-9 col-md-9 col-lg-7 col-xl-7 col-xxl-6 col-xxxl-6 ms-auto mb-2">
+                                        <div class="row justify-content-end">
+                                            <div class="col-xs-3 col-sm-2 col-md-3 col-lg-4 col-xl-3 selectbox-pe-0">
+                                                <div class="input-group">
+                                                    <h5 class="m-2 d-none d-lg-block align-self-center">검색조건</h5>
+                                                    <select class="form-select" id="search-target" aria-label="">
+                                                        <option value="search_TITLE_LIKE">제목</option>
+                                                        <option value="search_CONTENT_LIKE">내용</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-xs-9 col-sm-9 col-md-9 col-lg-8 col-xl-9 col-xxxl-8">
+                                                <div class="input-group">
+                                                    <input type="text" id="search-target-text" class="form-control" placeholder="검색 내용">
+                                                    <button type="button" id="btn-search" class="btn btn-primary border-primary"><i class="ri-search-line"></i><span class="ms-1">검색</span></button>
+                                                    <button type="button" id="btn-reset" class="btn btn-soft-dark ms-1 shadow-none"><i class="ri-loop-left-fill"></i><span class="ms-1">초기화</span></button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div><!--// 검색 -->
+                                </div>
+                            </div>
+                            <!--// 버튼 & 검색 -->
+
+                            <!-- table #dataTable - DataTable 로드 -->
+                            <div class="scrollable-container" data-simplebar>
+                                <div class="table-inner-wrapper">
+                                    <table id="dataTable" class="table table-hover table-striped w-100 custom board-box">
+                                    </table>
+                                </div>
+                            </div><!--// #dataTable - DataTable 로드 -->
+                            <!-- 푸터 페이지네이션 -->
+                            <div class="dt-footer" data-table="dataTable"></div>
+                        </form>
+                    </div><!--// card body -->
+                </div> <!--// card -->
+            </div><!--// col -->
+        </div><!--// row -->
+    </th:block>
+
+    <!-- modal block -->
+    <th:block th:fragment="pageModal">
+        <!-- 여기에 페이지 모달 내용을 넣습니다. -->
+
+        <!-- 게시글 작성, 수정 모달 -->
+        <div class="modal fade" id="note-editor-modal" tabindex="-1" aria-labelledby="compose-modal" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <!-- modal-header -->
+                    <div class="modal-header justify-content-end bg-primary text-white">
+                        <h5 class="modal-title"><i class="ri-edit-fill"></i> 글 작성</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <!--// modal-header -->
+
+                    <!-- modal-body -->
+                    <div class="p-1">
+                        <div class="modal-body px-3 pb-3">
+                            <form>
+                                <div class="mb-2">
+                                    <input type="text" id="title" class="form-control" placeholder="제목">
+                                </div>
+                                <div class="write-mdg-box mb-3">
+                                    <!-- editor -->
+                                    <div class="main-container">
+                                        <!-- <div id="editor-menu-bar"></div> -->
+                                        <div class="editor-container editor-container_classic-editor editor-container_include-style editor-container_include-word-count editor-container_include-fullscreen"
+                                             id="editor-container">
+                                            <div class="editor-container__editor"><div id="editor"></div></div>
+                                            <div class="editor_container__word-count" id="editor-word-count"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <input type="file" id="file-input" class="form-control" multiple>
+
+                                <div class="col-12 mt-3 mb-3" id="file-upload-result">
+                                    <div id="memberUploadLoading" class="d-none mt-3">
+                                        <div class="spinner-border spinner-border-sm me-1"></div>
+                                        업로드 중입니다...
+                                    </div>
+                                    <div class="row" id="file-upload-list">
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <!--// modal-body -->
+                    <!-- modal-footer -->
+                    <div class="modal-footer p-2">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">닫기</button>
+                        <button id="btn-ssave" type="button" class="btn btn-primary me-1 btn-save"><i class="ri-send-plane-2-line me-1"></i> 저장</button>
+                    </div>
+                    <!--// modal-footer -->
+                </div>
+            </div>
+        </div><!--// compose modal -->
+
+        <!-- 게시글 상세보기 모달 -->
+        <div class="modal fade" id="note-view-modal" tabindex="-1" aria-labelledby="boardmodal" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable modal-lg">
+                <div class="modal-content">
+                    <!-- modal-header -->
+                    <div class="modal-header justify-content-end bg-primary text-white">
+                        <h5 class="modal-title"><i class="ri-file-copy-2-fill"></i> [[${boardName}]]</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <!--// modal-header -->
+
+                    <!-- modal-body -->
+                    <div class="modal-body data-board">
+                        <div class="row">
+                            <!-- title -->
+                            <h5 class="fs-18 mt-1 mb-2" id="view-title"></h5>
+                            <!--// title -->
+
+                            <!-- 작성시간, 작성자 -->
+                            <div class="d-flex mb-2 mt-1 col-12">
+                                <div class="w-100 overflow-hidden">
+                                    <p class="float-end m-0"><i class="ri-time-line"></i> <span id="view-created-at">2025.03.11, 10:59</span></p>
+                                    <h6 class="m-0"><i class="ri-account-circle-fill"></i> <span id="view-username">아무개</span></h6>
+                                </div>
+                            </div>
+                            <hr class="m-0">
+                            <!--// 작성시간, 작성자 -->
+
+                            <!-- content -->
+                            <div class="content-area ck-content" id="view-content">
+                                <!-- class에 'ck-content'를 넣어줘야 ckeditor 디자인이 적용됨 -->
+                            </div>
+                            <hr id="file-view-hr">
+                            <!--// content -->
+
+                            <!-- 파일 다운로드 -->
+                            <h3 class="mt-1 mb-2 fs-15 d-none" id="file-view-title"><i class="ri-download-line"></i> 첨부파일</h3>
+                            <div class="col-12 mb-2 d-none" id="file-view-result">
+                                <div class="row" id="file-view-list">
+                                </div>
+                            </div>
+
+                            <div id="comment-view-section" class="col-12 d-none">
+                                <h4 class="fs-16"><i class="ri-chat-1-line"></i> 댓글</h4>
+                                <div id="comment-view-list"></div>
+                                <div id="comment-view-empty" class="text-muted fs-13 py-2 d-none">등록된 댓글이 없습니다.</div>
+                                <div class="mt-2">
+                                    <textarea id="comment-content" class="form-control" rows="3" placeholder="댓글을 입력해주세요."></textarea>
+                                    <div class="text-end mt-2">
+                                        <button type="button" id="btn-comment-save" class="btn btn-primary btn-sm">
+                                            <i class="ri-send-plane-2-line me-1"></i>댓글 등록
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!--// modal-body -->
+
+                    <!-- modal-footer -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                    </div><!--// modal-footer -->
+                </div>
+            </div>
+        </div><!--// view modal -->
+    </th:block>
+
+    <!-- script block -->
+    <th:block th:fragment="pageScript">
+        <!-- 여기에 추가적으로 필요한 script 내용을 넣습니다. -->
+        <!-- Daterangepicker Plugin js / 날짜 범위 선택 -->
+        <script src="/vendor/daterangepicker/moment.min.js"></script>
+        <script src="/vendor/daterangepicker/daterangepicker.js"></script>
+
+        <script type="module" src="/js/editor/ckeditor5_other.js"></script>
+
+        <script type="module" src="/js/board/board-note.js"></script>
+
+    </th:block>
+
+</th:block>

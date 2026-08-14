@@ -1,0 +1,35 @@
+version: 0.0
+os: linux
+
+files:
+  - source: /
+    destination: /opt/paramount-pmx-app
+    overwrite: true
+
+permissions:
+  - object: /opt/paramount-pmx-app/scripts
+    owner: root
+    group: root
+    mode: 755
+    type:
+      - directory
+  - object: /opt/paramount-pmx-app/scripts
+    pattern: "**"
+    owner: root
+    group: root
+    mode: 755
+    type:
+      - file
+
+hooks:
+  # idle 슬롯에 새 jar 반영 + 기동 + health ok면 nginx 전환 + 기존 슬롯 종료
+  ApplicationStart:
+    - location: scripts/prod_deploy.sh
+      timeout: 300
+      runas: root
+
+  # 최종 확인(가볍게 재확인만)
+  ValidateService:
+    - location: scripts/prod_healthcheck.sh
+      timeout: 120
+      runas: root

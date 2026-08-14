@@ -1,0 +1,198 @@
+<th:block th:fragment="topbar_2ds" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+    <!-- ========== Topbar Start ========== -->
+    <div class="navbar-custom" style="margin-left: 0;">
+        <!-- topbar -->
+        <div class="topbar container-fluid">
+            <!-- align-items-center -->
+            <div class="d-flex align-items-center gap-lg-2 gap-1">
+                <!-- Sidebar Menu Toggle Button -->
+                <button class="button-toggle-menu d-md-block d-lg-none ps-0 pe-1" style="width:auto; font-size:1.6rem; top:0.2rem;">
+                    <i class="ri-menu-2-fill"></i>
+                </button><!--// Sidebar Menu Toggle Button -->
+
+                <!-- Topbar Brand Logo -->
+                <div class="logo-topbar p-0 ms-2" style="display: block;">
+                    <!-- Logo light -->
+                    <a href="/index" class="logo-light">
+                        <span class="logo-lg">
+                            <img src="/images/logo.png" alt="logo">
+                        </span>
+                        <span class="logo-sm">
+                            <img src="/images/logo.png" alt="small logo">
+                        </span>
+                    </a>
+
+                    <!-- Logo Dark -->
+                    <a href="/index" class="logo-dark">
+                        <span class="logo-lg">
+                            <img src="/images/logo-dark.png" alt="dark logo">
+                        </span>
+                        <span class="logo-sm">
+                            <img src="/images/logo-dark.png" alt="small logo">
+                        </span>
+                    </a>
+                </div><!--// Topbar Brand Logo -->
+
+                <!-- pc pc 햄버그 버튼/Menu Toggle Button -->
+                <button class="navbar-toggle" data-bs-toggle="collapse" data-bs-target="#topnav-menu-content">
+                    <div class="lines">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </button><!--// pc 햄버그 버튼/Menu Toggle Button -->
+
+                <div class="d-none d-xxl-block outlink-area" style="position:absolute; left: 13.1rem; z-index:1;">
+                    <ul class="nav-outlink-list d-flex p-0 m-0" style="list-style: none;">
+                        <li class="nav-item">
+                            <a href="#" class="navbar-nav-link text-nowrap active">
+                                <i class="ri-global-line me-1"></i>
+                                <span>PMX HOME</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- topbar-menu -->
+            <ul class="topbar-menu d-flex align-items-center gap-3">
+                <!-- 날짜 시간 표출 -->
+                <li class="d-none d-md-inline-block">
+                    <ol class="m-0">
+                        <p id="date-time" class="m-0 text-white-50"></p>
+                        <script>
+                            function updateDateTime() {
+                                const now = new Date();
+                                const year = now.getFullYear();
+                                const month = String(now.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작
+                                const day = String(now.getDate()).padStart(2, '0');
+                                const daysOfWeek = ['일', '월', '화', '수', '목', '금', '토'];
+                                const dayOfWeek = daysOfWeek[now.getDay()]; // 요일 구하기
+                                const hours = String(now.getHours()).padStart(2, '0');
+                                const minutes = String(now.getMinutes()).padStart(2, '0');
+                                const seconds = String(now.getSeconds()).padStart(2, '0');
+                                // HTML 요소 생성 및 내용 설정
+                                const dateTimeElement = document.getElementById('date-time');
+                                dateTimeElement.innerHTML = `${year}년 ${month}월 ${day}일 (${dayOfWeek}) <strong>${hours}:${minutes}:${seconds}</strong>`;
+                            }
+                            // 1초마다 현재 시간 업데이트
+                            setInterval(updateDateTime, 1000);
+                            // 처음 실행 시 바로 호출
+                            updateDateTime();
+                        </script>
+                    </ol>
+                </li><!--// 날짜 시간 표출 -->
+                <!-- 로그인정보 -->
+                <li class="dropdown d-none d-sm-inline-block d-mobile-inline-block">
+                    <a class="nav-link dropdown-toggle arrow-none nav-user px-2" data-bs-toggle="dropdown" id="profile" href="#" role="button" aria-haspopup="false" aria-expanded="false">
+                        <span class="account-user-avatar">
+                            <img id="topbarProfileImage" th:src="${_user.profileImg}" alt="user-image" width="32" height="32" class="rounded-circle" style="object-fit: cover;">
+                        </span>
+                        <span class="d-lg-flex flex-column gap-1 d-none">
+                            <h5 class="my-0" id="loginUserName" th:text="${_user.name}">이름</h5>
+                            <h6 class="my-0 fw-normal" th:text="${_user.roleName}">권한</h6>
+                            <input type="hidden" id="loginUserId" th:value="${_user.id}">
+                        </span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated profile-dropdown" id="profile-state" th:if="${_isAuthenticated} and ${_user != null}">
+                        <!-- item-->
+                        <a href="#" class="dropdown-item border-top" data-bs-toggle="modal" data-bs-target="#passwordChangeModal">
+                            <i class="ri-lock-password-fill align-middle me-1"></i>
+                            <span>비밀번호 변경</span>
+                        </a><!--//item -->
+                        <!-- item-->
+                        <a href="#" class="dropdown-item border-top navbar_logout">
+                            <i class="ri-logout-box-fill align-middle me-1"></i>
+                            <span>Logout</span>
+                            <form name="logoutForm" action="/logout" method="post"></form>
+                        </a><!--//item -->
+
+                    </div><!--// dropdown-menu -->
+                </li><!-- 로그인정보 -->
+            </ul><!--// topbar-menu -->
+        </div>
+        <!--// topbar -->
+        <!-- 기사 작성화면이 아니고, 기사 데스킹 권한 있는 경우의 Topbar -->
+        <!-- Topbar 스크립트 -->
+        <script type="module" src="/js/common/topbar.js"></script>
+    </div>
+
+    <!-- Password Change Modal -->
+    <div class="modal fade" id="passwordChangeModal" tabindex="-1"
+         aria-labelledby="passwordChangeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <!-- header -->
+                <div class="modal-header">
+                    <h5 class="modal-title" id="passwordChangeModalLabel">비밀번호 변경</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+                </div>
+
+                <!-- body -->
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3 row align-items-center">
+                            <label for="currentPassword" class="col-4 col-form-label">현재 비밀번호</label>
+                            <div class="col-8 align-items-center gap-2">
+                                <div class="input-group">
+                                    <input type="password"
+                                           class="form-control"
+                                           id="currentPassword"
+                                           name="currentPassword"
+                                           autocomplete="current-password"
+                                           required />
+                                    <button class="btn btn-outline-secondary" type="button" data-toggle-password="#currentPassword">
+                                        <i class="ri-eye-line"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 row align-items-center">
+                            <label for="newPassword" class="col-4 col-form-label">새 비밀번호</label>
+                            <div class="col-8 align-items-center gap-2">
+                                <div class="input-group">
+                                    <input type="password"
+                                           class="form-control"
+                                           id="newPassword"
+                                           name="newPassword"
+                                           autocomplete="new-password"
+                                           minlength="8"
+                                           required />
+                                    <button class="btn btn-outline-secondary" type="button" data-toggle-password="#newPassword">
+                                        <i class="ri-eye-line"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-2 row align-items-center">
+                            <label for="confirmPassword" class="col-4 col-form-label">비밀번호 확인</label>
+                            <div class="col-8">
+                                <div class="input-group has-validation">
+                                    <input type="password"
+                                           class="form-control"
+                                           id="confirmPassword"
+                                           name="confirmPassword"
+                                           autocomplete="new-password"
+                                           required />
+                                    <button class="btn btn-outline-secondary"
+                                            type="button"
+                                            data-toggle-password="#confirmPassword">
+                                        <i class="ri-eye-line"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <!-- footer -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary">변경</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</th:block>

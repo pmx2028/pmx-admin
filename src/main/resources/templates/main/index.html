@@ -1,0 +1,297 @@
+<!--
+  페이지 생성시 해당 페이지 구조 복붙해서 사용하면됩니다.
+-->
+<!DOCTYPE html>
+<th:block
+        xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+        th:replace="~{layout/base-layout :: base-layout(
+            pageContent=~{::pageContent},
+            pageHead=~{::pageHead},
+            pageModal=~{::pageModal},
+            pageScript=~{::pageScript},
+            title='',
+            subtitle='',
+            containerFluidExtraClass='main_area'
+          )}">
+
+
+    <!-- head block -->
+    <th:block th:fragment="pageHead">
+        <!-- 여기에 추가적으로 필요한 head 내용을 넣습니다. -->
+        <!-- Fullcalendar css -->
+        <link href="/vendor/fullcalendar/main.min.css" rel="stylesheet" type="text/css" />
+        <!-- custom css  -->
+        <link href="/css/common.css" rel="stylesheet" type="text/css" />
+        <link href="/css/main.css" rel="stylesheet" type="text/css" />
+    </th:block>
+
+    <!-- content block -->
+    <th:block th:fragment="pageContent">
+
+    </div><!--/ /row -->
+
+    </th:block>
+    <!-- ============================================================== -->
+    <!-- End Page content -->
+    <!-- ============================================================== -->
+    <!-- modal block -->
+    <th:block th:fragment="pageModal">
+        <!-- 여기에 페이지 모달 내용을 넣습니다. -->
+        <!--th:block th:replace="~{partials/modal-duty :: modal-duty}"></th:block-->
+    </th:block>
+
+    <!-- script block -->
+    <th:block th:fragment="pageScript">
+
+        <!-- 여기에 추가적으로 필요한 script 내용을 넣습니다. -->
+        <!-- Fullcalendar js -->
+        <script src="/vendor/fullcalendar/main.min.js"></script>
+
+        <!-- Masonry -->
+        <script th:inline="none">
+            document.addEventListener('DOMContentLoaded', function () {
+
+                const grid = document.querySelector('.grid');
+                if (!grid) return;
+
+                let msnry = null;
+                const isMobile = () => window.innerWidth <= 767;
+
+                function destroyMasonry() {
+                    if (msnry) {
+                        msnry.destroy();
+                        msnry = null;
+                    }
+                }
+
+                function initMasonry() {
+
+                    if (isMobile()) {
+                        destroyMasonry();
+                        return;
+                    }
+
+                    if (!msnry) {
+                        msnry = new Masonry(grid, {
+                            itemSelector: '.grid-item',
+                            columnWidth: '.grid-sizer',
+                            percentPosition: true,
+                            horizontalOrder: true,
+                            gutter: 10,
+                            transitionDuration: '0.25s'
+                        });
+
+                        window.msnry = msnry;
+
+                        /* Masonry layout 완료 후 tooltip 재초기화 */
+                        msnry.on('layoutComplete', function () {
+
+                            if (window.initTooltips) {
+                                window.initTooltips();
+                            }
+                        });
+                    }
+                    msnry.layout();
+                }
+
+                /* -------------------------
+                   이미지 로딩 후 초기화
+                ------------------------- */
+
+                imagesLoaded(grid, function () {
+
+                    const items = grid.querySelectorAll('.grid-item');
+
+                    items.forEach((el, i) => {
+
+                        setTimeout(() => {
+                            el.classList.add('loaded');
+                            initMasonry();
+                        }, (i + 1) * 100);
+
+                    });
+
+                    initMasonry();
+                });
+
+                /* -------------------------
+                   Resize 대응
+                ------------------------- */
+
+                window.addEventListener('resize', debounce(() => {
+                    initMasonry();
+
+                    if (window.initTooltips) {
+                        window.initTooltips();
+                    }
+
+                }, 200));
+
+                /* -------------------------
+                   Tab 변경시 layout
+                ------------------------- */
+
+                document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab => {
+
+                    tab.addEventListener('shown.bs.tab', () => {
+
+                        setTimeout(() => {
+
+                            if (msnry) msnry.layout();
+
+                            if (window.initTooltips) {
+                                window.initTooltips();
+                            }
+
+                        }, 350);
+
+                    });
+
+                });
+
+                /* -------------------------
+                   Calendar render 대응
+                ------------------------- */
+
+                const calendarAreas = document.querySelectorAll('#calendar, #calendar2');
+
+                calendarAreas.forEach(el => {
+
+                    const observer = new ResizeObserver(() => {
+
+                        if (msnry && !isMobile()) {
+                            msnry.layout();
+                        }
+
+                    });
+
+                    observer.observe(el);
+
+                });
+
+                /* -------------------------
+                   최초 툴팁 초기화
+                ------------------------- */
+
+                if (window.initTooltips) {
+                    window.initTooltips();
+                } else {
+
+                    // article-home.js 로딩 대기
+                    setTimeout(() => {
+                        if (window.initTooltips) {
+                            window.initTooltips();
+                        }
+                    }, 500);
+                }
+            });
+
+
+            function debounce(fn, delay) {
+                let timer;
+                return function () {
+                    clearTimeout(timer);
+                    timer = setTimeout(fn, delay);
+                };
+            }
+        </script>
+
+        <!-- 모바일뷰에 테이블 스크롤 아이콘 표시 -->
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                // SimpleBar가 적용된 테이블 선택
+                const containers = document.querySelectorAll('.table-responsive-sm');
+
+                containers.forEach(container => {
+                    const scrollableContent = container.querySelector('.simplebar-content-wrapper');
+                    if (scrollableContent) {
+                        const checkScroll = () => {
+                            const { scrollWidth, clientWidth, scrollLeft } = scrollableContent;
+                            const isScrolledRight = scrollLeft + clientWidth < scrollWidth;
+                            const isScrolledLeft = scrollLeft > 0;
+                            if (isScrolledRight) {
+                                container.classList.add('scrolled-right');
+                            } else {
+                                container.classList.remove('scrolled-right');
+                            }
+                            if (isScrolledLeft) {
+                                container.classList.add('scrolled-left');
+                            } else {
+                                container.classList.remove('scrolled-left');
+                            }
+                        };
+                        checkScroll();
+                        scrollableContent.addEventListener('scroll', checkScroll);
+                        window.addEventListener('resize', checkScroll);
+                    }
+                });
+            });
+        </script>
+
+        <!-- 테이블 드레그  -->
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                // SimpleBar가 적용된 컨테이너들 선택
+                const dragContainers = document.querySelectorAll('.index-scrollable-container, .table-responsive-sm, [data-simplebar]');
+
+                dragContainers.forEach(container => {
+                    let isDown = false;
+                    let startY;       // 시작 마우스 Y 좌표
+                    let scrollTop;    // 시작 스크롤 TOP 위치
+                    let scrollTarget = null;
+
+                    // 실제 스크롤이 발생하는 내부 wrapper를 찾는 함수
+                    const getTarget = () => container.querySelector('.simplebar-content-wrapper') || container;
+
+                    container.addEventListener('mousedown', (e) => {
+                        if (e.button !== 0) return; // 왼쪽 마우스만 허용
+
+                        scrollTarget = getTarget();
+                        isDown = true;
+
+                        // 시각적 피드백을 위한 클래스 추가
+                        container.classList.add('drag-active');
+                        scrollTarget.classList.add('dragging');
+
+                        // 세로 좌표(pageY)와 현재 세로 스크롤 위치(scrollTop) 저장
+                        startY = e.pageY - container.offsetTop;
+                        scrollTop = scrollTarget.scrollTop;
+
+                        container.style.userSelect = 'none'; // 드래그 중 텍스트 선택 방지
+                    });
+
+                    const endDrag = () => {
+                        if (!isDown) return;
+                        isDown = false;
+
+                        container.classList.remove('drag-active');
+                        if (scrollTarget) {
+                            scrollTarget.classList.remove('dragging');
+                        }
+                        container.style.userSelect = '';
+                    };
+
+                    window.addEventListener('mouseup', endDrag);
+                    container.addEventListener('mouseleave', endDrag);
+
+                    container.addEventListener('mousemove', (e) => {
+                        if (!isDown || !scrollTarget) return;
+
+                        e.preventDefault(); // 화면 밀림 방지
+
+                        // 현재 마우스 Y 좌표값 계산
+                        const y = e.pageY - container.offsetTop;
+
+                        // 마우스가 움직인 거리 계산 (감도 2.0 적용)
+                        const walk = (y - startY) * 2;
+
+                        // [중요] 실제 세로 스크롤 위치 변경
+                        scrollTarget.scrollTop = scrollTop - walk;
+                    });
+
+                });
+            });
+        </script>
+
+    </th:block>
+</th:block>

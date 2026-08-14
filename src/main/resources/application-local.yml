@@ -1,0 +1,170 @@
+spring:
+  application:
+    name: paramount-pmx
+    siteurl: "http://localhost:7022"
+
+  messages:
+    cache-duration: 3600
+    basename: "classpath:locale/messages"
+    encoding: "UTF-8"
+
+  servlet:
+    multipart:
+      max-file-size: 15MB
+      max-request-size: 30MB
+
+  datasource:
+    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    tomcat:
+      connection-properties: "useUnicode=true;characterEncoding=utf-8"
+
+  jmx:
+    enabled: true
+
+  jpa:
+    open-in-view: true
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    properties:
+      jakarta:
+        persistence:
+          query:
+            timeout: 10000
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: ""
+
+  session:
+    store-type: redis # 레디스를 타겟팅하도록 명시!
+    timeout: 1h   # 실제 사용 하단 servlet timeout 도 동일하게 세팅
+    redis:
+      repository-type: indexed
+      flush-mode: immediate
+      namespace: "myapp_pmx:sess"
+      cleanup-cron: "0 0 */1 * * *"
+
+  thymeleaf:
+    enabled: true
+    prefix: "classpath:/templates/"
+    suffix: ".html"
+    mode: HTML
+    encoding: "UTF-8"
+    cache: false
+    servlet:
+      content-type: "text/html"
+
+  output:
+    ansi:
+      enabled: always
+
+#  mail:
+#    host: smtp.mailplug.co.kr
+#    port: 465
+#    username: "pmx2028@gmail.com"
+#    password: ${MAIL_NEWS_TEST_APP_PASSWORD}
+#    default-encoding: "UTF-8"
+#    properties:
+#      mail:
+#        debug: false
+#        smtp:
+#          starttls:
+#            enable: true
+#          auth: true
+#          socketFactory:
+#            class: javax.net.ssl.SSLSocketFactory
+#        smtps:
+#          ssl:
+#            checkserveridentity: true
+#          ssl.trust: "*"
+  task:
+    scheduling:
+      thread:
+        pool:
+          # 스케줄링 태스크를 실행할 스레드 풀의 크기
+          size: 5
+
+server:
+  port: 7022
+  compression:
+    enabled: true
+  tomcat:
+    mbeanregistry:
+      enabled: true
+
+  error:
+    include-exception: true
+    include-stacktrace: ALWAYS
+    path: /error
+    whitelabel:
+      enabled: false
+
+  servlet:
+    context-path: /
+    session:
+      timeout: 1h
+      cookie:
+        path: /
+        name: JSESSIONID_PMX
+        http-only: true
+        secure: false
+        same-site: lax
+
+logging:
+  config: "classpath:logback-spring.xml"
+  file:
+    path: logs
+  level:
+    p6spy: INFO
+    root: INFO
+    # RequestLoggingFilter 로그
+    com.paramount.pmx.logging.RequestLoggingFilter: INFO
+    org:
+      springframework: INFO
+      springframework.web: INFO
+      springframework.web.servlet.DispatcherServlet: DEBUG
+      springframework.web.servlet.handler.SimpleUrlHandlerMapping: WARN
+      springframework.web.servlet.resource: WARN
+      springframework.web.servlet.mvc.method.annotation: INFO
+      hibernate:
+        SQL: OFF
+        type:
+          descriptor:
+            sql:
+              BasicBinder: OFF
+        orm:
+          jdbc:
+            bind: OFF
+        engine:
+          internal:
+            StatisticalLoggingSessionEventListener: OFF
+      thymeleaf: INFO
+      thymeleaf.standard: INFO
+      thymeleaf.inline: INFO
+
+cloud:
+  aws:
+    credentials:
+      accessKey: ${AWS_ACCESS_KEY}
+      secretKey: ${AWS_SECRET_KEY}
+    stack:
+      auto: false
+    region:
+      static: ap-northeast-2
+    s3:
+      bucket: pmx2028-dev-bucket
+      url: "https://s3.ap-northeast-2.amazonaws.com/pmx2028-dev-bucket"
+
+
+paramount:
+  security:
+    rememberme-enabled: false
+    rememberme-cookiename: RSESSIONID_PMX_DC
+    rememberme-key: ${REMEMBER_ME_KEY}
+    rememberme-table: persistent_logins_pmx
+    rememberme-validity-days: 7

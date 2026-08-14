@@ -1,0 +1,54 @@
+<th:block th:fragment="modal-board-manage">
+    <!-- 관리 > 게시판관리 > 게시판 생성 모달 -->
+    <div class="modal fade" id="board-modal" tabindex="-1" aria-labelledby="bbs-modal" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- modal-header -->
+                <div class="modal-header justify-content-end bg-primary text-white">
+                    <h5 class="modal-title"><i class="ri-edit-fill"></i> 게시판 추가</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <!--// modal-header -->
+
+                <!-- modal-body -->
+                <div class="p-1">
+                    <div class="modal-body px-3 pb-3">
+                        <input type="text" id="name" class="form-control mb-2" placeholder="게시판명">
+                        <input type="text" id="code" class="form-control mb-2" placeholder="게시판 코드">
+                        <select class="form-select mb-2" id="kindof" aria-label="게시판 종류">
+                            <option value="-" selected disabled>게시판 종류</option>
+                            <option th:each="bKind : ${boardKindOfList}"
+                                    th:value="${bKind.code}"
+                                    th:text="${bKind.label}">
+                            </option>
+                        </select>
+                        <select class="form-select mb-2" id="anon" aria-label="공개여부">
+                            <option value="-" selected disabled>공개여부</option>
+                            <option th:each="bAnon : ${boardAnonList}"
+                                    th:value="${bAnon.code}"
+                                    th:text="${bAnon.label}">
+                        </select>
+                        <select class="form-select mb-2" id="commented" aria-label="댓글사용여부">
+                            <option value="-" selected disabled>댓글사용여부</option>
+                            <option value="1">댓글사용</option>
+                            <option value="0">댓글미사용</option>
+                        </select>
+                        <select class="form-select mb-2" id="activated" aria-label="사용여부">
+                            <option value="-" selected disabled>사용여부</option>
+                            <option value="1">사용</option>
+                            <option value="0">미사용</option>
+                        </select>
+                    </div>
+                </div>
+                <!--// modal-body -->
+
+                <!-- modal-footer -->
+                <div class="modal-footer px-2 pb-3">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">닫기</button>
+                    <button type="button" id="btn-save" class="btn me-1 btn-save"><i class="ri-add-circle-line me-1"></i> 게시판추가</button>
+                </div>
+                <!--// modal-footer -->
+            </div>
+        </div>
+    </div><!--// bbs modal -->
+</th:block>

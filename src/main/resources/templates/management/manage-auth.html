@@ -1,0 +1,82 @@
+<!--
+  페이지 생성시 해당 페이지 구조 복붙해서 사용하면됩니다.
+-->
+<!DOCTYPE html>
+<th:block th:replace="~{layout/base-layout :: base-layout(
+            pageContent=~{::pageContent},
+            pageHead=~{::pageHead},
+            pageModal=~{::pageModal},
+            pageScript=~{::pageScript},
+            title='권한관리',
+            subtitle='관리'
+        )}">
+
+    <!-- head block -->
+    <th:block th:fragment="pageHead">
+        <!-- 여기에 추가적으로 필요한 head 내용을 넣습니다. -->
+        <!-- Daterangepicker css -->
+        <link href="/vendor/daterangepicker/daterangepicker.css" rel="stylesheet" type="text/css" />
+
+        <!-- Datatables css -->
+        <link href="/vendor/datatables.net-bs5/css/dataTables.bootstrap5.min.css" rel="stylesheet" type="text/css" />
+        <link href="/vendor/datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css" rel="stylesheet"
+              type="text/css" />
+
+        <!-- custom css  -->
+        <link href="/css/management.css" rel="stylesheet" type="text/css" />
+        <meta name="board_id" th:content="${code}">
+    </th:block>
+
+    <!-- content block -->
+    <th:block th:fragment="pageContent">
+        <!-- 여기에 페이지 본문 내용을 넣습니다. -->
+        <th:block th:replace="~{partials/mobile-not-supported-notice :: mobile-not-supported-notice('manage-auth-mobile-notice')}"></th:block>
+        <!-- 3 Cards -->
+        <div class="row g-2 row-cols-1 row-cols-md-2 row-cols-xl-4 manage-auth management-mobile-notice-target">
+            <!-- Role ↔ Permissions -->
+            <div class="col hover-bg">
+                <a th:href="@{/manage/auth/role-permissions}" class="text-decoration-none">
+                    <div class="card h-100">
+                        <div class="card-body d-flex flex-column pb-0">
+                            <strong class="h4 m-0">역할 권한 매핑 <span class="auth-sub-text mt-1">(Role ↔ Permission)</span></strong>
+                            <p class="mt-2 mb-0 text-muted small">
+                                역할에 부여되는 기본적인 페이지/행동 권한을 설정합니다.
+                            </p>
+                        </div>
+                        <div class="card-footer d-flex justify-content-between align-items-center">
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <!-- User ↔ Permissions -->
+            <div class="col hover-bg">
+                <a th:href="@{/manage/auth/user-permissions}" class="text-decoration-none">
+                    <div class="card h-100">
+                        <div class="card-body d-flex flex-column pb-0">
+                            <strong class="h4 m-0">사용자별 추가 권한 매핑 <span class="auth-sub-text mt-1">(User ↔ Permission)</span></strong>
+                            <p class="mt-2 mb-0 text-muted small">
+                                사용자 개인별로 추가 혹은 예외 권한을 설정합니다.
+                            </p>
+                        </div>
+                        <div class="card-footer d-flex justify-content-between align-items-center">
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+    </th:block>
+
+    <!-- modal block -->
+    <th:block th:fragment="pageModal">
+        <!-- 여기에 페이지 모달 내용을 넣습니다. -->
+
+    </th:block>
+
+    <!-- script block -->
+    <th:block th:fragment="pageScript">
+        <!-- 여기에 추가적으로 필요한 script 내용을 넣습니다. -->
+
+    </th:block>
+
+</th:block>

@@ -1,0 +1,76 @@
+# DEV 환경 배포용 GitHub Actions 워크플로우
+name: Deploy DEV
+
+on:
+  # dev 브랜치에 push 될 때만 실행
+  push:
+    branches: [ "dev" ]
+
+# 같은 브랜치에서 연속 푸시로 배포가 겹치면
+# 이전 배포를 취소하고 최신 배포만 진행 (중복 배포 방지)
+concurrency:
+  group: dev-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1) 레포지토리 소스 체크아웃
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2) JDK 17 세팅 (Gradle 캐시도 활성화)
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      # 3) gradlew 실행 권한 부여
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      # 4) 빌드 (테스트는 스킵)
+      - name: Build (Gradle)
+        run: ./gradlew clean build -x test
+
+      # 5) CodeDeploy로 보낼 번들(zip) 준비
+      #    - jar 파일을 deploy/app.jar 로 고정명 복사
+      #    - appspec-dev.yml을 appspec.yml로 복사 (CodeDeploy가 기본으로 찾는 이름)
+      #    - scripts 폴더도 포함 (hook에서 실행될 스크립트들)
+      - name: Prepare deploy bundle
+        run: |
+          mkdir -p ./deploy/scripts
+          cp "$(ls -1 ./build/libs/*SNAPSHOT.jar | grep -v plain | head -n 1)" ./deploy/app.jar
+          cp appspec-dev.yml ./deploy/appspec.yml
+          cp -r ./scripts/dev/* ./deploy/scripts/
+          cd deploy
+          zip -r deploy-dev.zip .
+
+      # 6) AWS 인증 설정
+      #    - 현재는 깃헙에 저장된 Access Key/Secret Key로 인증
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      # 7) 생성한 배포 번들을 S3에 업로드
+      #    - CodeDeploy가 이 zip을 가져가서 EC2에 배포하게 됨
+      - name: Upload to S3
+        run: |
+          aws s3 cp deploy/deploy-dev.zip \
+            s3://dealsite-github-action/dealsite-cms/dev/${{ github.sha }}.zip
+
+      # 8) CodeDeploy 트리거 (현재는 주석 처리됨)
+      #    - 이걸 켜면 업로드 후 즉시 배포까지 자동으로 진행됨
+      - name: Trigger CodeDeploy
+        run: |
+          aws deploy create-deployment \
+            --application-name "paramount-pmx" \
+            --deployment-group-name "dev-pxm" \
+            --s3-location bucket=dealsite-github-action,key=dealsite-cms/dev/${{ github.sha }}.zip,bundleType=zip

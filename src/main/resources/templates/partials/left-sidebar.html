@@ -1,0 +1,222 @@
+<th:block th:fragment="left-sidebar_2ds" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+    <!-- Left Sidebar Start -->
+    <div class="leftside-menu">
+
+        <!-- Sidebar Hover Menu Toggle Button -->
+        <div class="button-sm-hover" data-bs-toggle="tooltip" data-bs-placement="right" title="Show Full Sidebar">
+            <i class="ri-checkbox-blank-circle-line align-middle"></i>
+        </div>
+
+        <!-- Sidebar -left -->
+        <div class="h-100" id="leftside-menu-container" data-simplebar>
+            <!-- Full Sidebar Menu Close Button -->
+            <div class="button-close-fullsidebar">
+                <i class="ri-close-fill align-middle"></i>
+            </div>
+
+            <!--- Sidemenu -->
+            <ul class="side-nav">
+                <a href="/index" class="mobile-logo logo-light">
+                    <span class="logo-lg">
+                        <img src="/images/logo.png" alt="logo">
+                    </span>
+                </a>
+
+                <!-- 홈 (데스크 페이지 접근 권한 보유 시 노출) -->
+                <li class="side-nav-item">
+                    <a data-bs-toggle="collapse" href="#sidebarNews" aria-expanded="false" aria-controls="sidebarNews" class="side-nav-link NavLink">
+                        <i class="ri-home-4-fill"></i>
+                        <span>홈</span>
+                        <span class="menu-arrow"></span>
+                    </a>
+                </li>
+                <!-- 기사 작성 (ACTION 권한) -->
+                <li class="side-nav-item" sec:authorize="hasAuthority('LESSON_PAGE_VIEW')">
+                    <a href="/article/write" class="side-nav-link">
+                        <i class="ri-pencil-fill"></i>
+                        <span> 강습관리 </span>
+                    </a>
+                </li>
+                <li class="side-nav-item" sec:authorize="hasAuthority('APART_PAGE_VIEW')">
+                    <a href="/apart/apart" class="side-nav-link">
+                        <i class="ri-pencil-fill"></i>
+                        <span> 아파트관리 </span>
+                    </a>
+                </li>
+                <!-- 매니저/강사관리 -->
+                <li class="side-nav-item" sec:authorize="hasAuthority('MANAGER_PAGE_VIEW')">
+                    <a data-bs-toggle="collapse" href="#sidebarArticles" aria-expanded="false" aria-controls="sidebarArticles" class="side-nav-link NavLink">
+                        <i class="ri-user-follow-line"></i>
+                        <span> 매니저/강사관리 </span>
+                        <span class="menu-arrow"></span>
+                    </a>
+                    <div class="collapse" id="sidebarArticles">
+                        <ul class="side-nav-second-level">
+                            <li><a href="/desk/article"><i class="bi bi-arrow-right-short"></i> 매니저관리</a></li>
+                            <li><a href="/desk/daily-reports"><i class="bi bi-arrow-right-short"></i> 강사관리</a></li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="side-nav-item" sec:authorize="hasAuthority('MEMBER_PAGE_VIEW')">
+                    <a href="/article/write" class="side-nav-link">
+                        <i class="ri-pencil-fill"></i>
+                        <span> 강습생현황 </span>
+                    </a>
+                </li>
+                <li class="side-nav-item" sec:authorize="hasAuthority('REFUND_PAGE_VIEW')">
+                    <a href="/article/write" class="side-nav-link">
+                        <i class="ri-pencil-fill"></i>
+                        <span> 환블관리 </span>
+                    </a>
+                </li>
+                <li class="side-nav-item" sec:authorize="hasAuthority('PAYMENT_PAGE_VIEW')">
+                    <a href="/article/write" class="side-nav-link">
+                        <i class="ri-pencil-fill"></i>
+                        <span> 정산관리 </span>
+                    </a>
+                </li>
+                <!-- 게시판 -->
+                <li class="side-nav-item" sec:authorize="hasAuthority('NOTICE_PAGE_VIEW')">
+                    <a data-bs-toggle="collapse" href="#sidebarBoards" aria-expanded="false" aria-controls="sidebarBoards" class="side-nav-link NavLink">
+                        <i class="ri-layout-3-line"></i>
+                        <span> 게시판 </span>
+                        <span class="menu-arrow"></span>
+                    </a>
+                    <div class="collapse" id="sidebarBoards">
+                        <ul class="side-nav-second-level">
+                            <!-- 공지사항 -->
+                            <li th:each="b : ${boardList[2]}" sec:authorize="hasAuthority('NOTICE_PAGE_VIEW')">
+                                <a th:href="@{/board/{id}(id=${b.id})}">
+                                    <i class="bi bi-arrow-right-short"></i> [[${b.name}]]
+                                </a>
+                            </li>
+
+                            <!-- 동적 게시판 목록: 공지 제외 -->
+                            <li th:each="b : ${boardList[1]}">
+                                <a th:href="@{/board/{id}(id=${b.id})}">
+                                    <i class="bi bi-arrow-right-short"></i> [[${b.name}]]
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="side-nav-item" sec:authorize="hasAuthority('STATISTICS_PAGE_VIEW')">
+                    <a href="/article/write" class="side-nav-link">
+                        <i class="ri-pencil-fill"></i>
+                        <span> 통계관리 </span>
+                    </a>
+                </li>
+                <li class="side-nav-item manage-side-nav-item"
+                    sec:authorize="hasAnyAuthority('ADMIN')">
+                    <a data-bs-toggle="collapse" href="#sidebarManage" aria-expanded="false" aria-controls="sidebarManage" class="side-nav-link NavLink">
+                        <i class="ri-settings-4-fill"></i>
+                        <span> 관리 </span>
+                        <span class="menu-arrow"></span>
+                    </a>
+                    <div class="collapse" id="sidebarManage">
+                        <ul class="side-nav-second-level">
+                            <li sec:authorize="hasAuthority('ADMIN')">
+                                <a href="/manage/staff"><i class="bi bi-arrow-right-short"></i> 직원관리</a>
+                            </li>
+                            <li sec:authorize="hasAuthority('ADMIN')">
+                                <a href="/manage/board"><i class="bi bi-arrow-right-short"></i> 게시판관리</a>
+                            </li>
+                            <li sec:authorize="hasAuthority('ADMIN')">
+                                <a href="/manage/auth"><i class="bi bi-arrow-right-short"></i> 권한관리</a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+            <div class="clearfix"></div>
+        </div>
+    </div>
+    <!----// Left Sidebar Start ---->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const homeNavLinks = document.querySelectorAll('.NavLink');
+
+            homeNavLinks.forEach(function(link) {
+                link.addEventListener('click', function(event) {
+                    const targetCollapseId = this.getAttribute('href');
+                    const isDeskMenu = targetCollapseId === '#sidebarArticles';
+
+                    // 데스크 1depth는 클릭 즉시 기사 데스크로 이동
+                    if (isDeskMenu) {
+                        window.location.href = '/desk/article';
+                        return;
+                    }
+
+                    event.preventDefault();
+                    const targetCollapseElement = document.querySelector(targetCollapseId);
+
+                    if (targetCollapseElement) {
+                        const collapseInstance =
+                            bootstrap.Collapse.getInstance(targetCollapseElement) ||
+                            new bootstrap.Collapse(targetCollapseElement, { toggle: false });
+                        collapseInstance.toggle();
+
+                    } else {
+                        console.warn(`Collapse 대상 요소를 찾을 수 없습니다: ${targetCollapseId}`);
+                    }
+                });
+            });
+        });
+
+        // 사이드바 하위 페이지 이동 시 active 상태 유지
+        document.addEventListener('DOMContentLoaded', function () {
+            const normalizePath = (path) => {
+                if (!path) return "/";
+                let p = path.trim();
+                if (!p.startsWith("/")) p = `/${p}`;
+                if (p.length > 1 && p.endsWith("/")) p = p.slice(0, -1);
+                return p;
+            };
+
+            const getHrefPath = (href) => {
+                if (!href || href.startsWith("#") || href.startsWith("javascript:")) return null;
+                try {
+                    return normalizePath(new URL(href, window.location.origin).pathname);
+                } catch (e) {
+                    return null;
+                }
+            };
+
+            const isPathMatch = (currentPath, linkPath) =>
+                currentPath === linkPath || currentPath.startsWith(`${linkPath}/`);
+
+            // 일보 검색 화면 nav 활성화 매칭
+            let currentPath = normalizePath(window.location.pathname);
+            if (currentPath === "/daily-reports/search" || currentPath.startsWith("/daily-reports/search/")) {
+                currentPath = "/article/daily-reports";
+            }
+
+            const links = [...document.querySelectorAll('.side-nav a[href]')];
+            const matched = links
+                .map((a) => ({ a, linkPath: getHrefPath(a.getAttribute('href')) }))
+                .filter(({ linkPath }) => linkPath && isPathMatch(currentPath, linkPath))
+                .sort((x, y) => y.linkPath.length - x.linkPath.length)[0]?.a;
+
+            if (!matched) return;
+
+            matched.classList.add('active');
+
+            const collapseParent = matched.closest('.collapse');
+            if (collapseParent) {
+                collapseParent.classList.add('show');
+
+                const trigger = collapseParent.previousElementSibling;
+                if (trigger && trigger.classList.contains('NavLink')) {
+                    trigger.classList.add('active');
+                    trigger.setAttribute('aria-expanded', 'true');
+                }
+
+                const topItem = collapseParent.closest('li.side-nav-item');
+                if (topItem) topItem.classList.add('menuitem-active');
+            }
+
+            const currentLi = matched.closest('li');
+            if (currentLi) currentLi.classList.add('menuitem-active');
+        });
+    </script>
+
+</th:block>

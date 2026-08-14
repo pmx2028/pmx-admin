@@ -1,0 +1,80 @@
+/*
+ * 관리, 게시판 영역에서 ckeditor 활요하기 위해 editor.css에서 임시로 에디터 설정 영역만 따로 가져온 파일입니다
+ */
+
+/*--------------------------------------------- 에디터  -------------------------------------------------------------------------------*/
+.write-mdg-box {box-shadow:none; background-color: #fff;}
+.write-mdg-box .ck-rounded-corners {width:100%; min-height:120px;}
+
+/* 툴바고정 */
+.ck.ck-sticky-panel .ck-sticky-panel__content_sticky {box-shadow: none; transition: transform 0.2s ease-in-out;}
+.ck.ck-menu-bar {border: 1px solid var(--ck-color-toolbar-border);}
+.ck.ck-editor__top .ck-sticky-panel .ck-sticky-panel__content {border-top: 1px solid var(--ck-color-toolbar-border);}
+
+/* 에디터 기본 세팅 */
+.ck-content {font-family:var(--ct-body-font-family); font-size:15px; line-height:30px; color:#222; word-break:break-word;}
+.editor-container_classic-editor .editor-container__editor {width:100%;}
+
+.ck.ck-balloon-panel-for-editor {z-index: 2020 !important;}
+.ck.ck-tooltip {z-index: 2021 !important;}
+.ck.ck-reset_all.ck-dialog__wrapper {z-index: 2030 !important;}
+#modal-table-editor-textarea + .ck.ck-editor {z-index: 2010 !important;}
+
+.modal {z-index: 2000; pointer-events: auto !important;}
+.modal-backdrop {z-index: 1990;}
+.modal.show .modal-dialog {overflow: visible !important;}
+.modal-content, .modal-dialog.modal-dialog-scrollable {overflow: visible !important;}
+
+.ck.ck-balloon-panel {z-index: 2020 !important;}
+.ck.ck-toolbar .ck-dropdown__panel {z-index: 2020 !important; }
+
+/* 에디터 테이블 세팅 */
+.ck-content figure.table:not(.layout-table) > table, .ck-content table.table:not(.layout-table) {border-top: 2px solid #333; border-bottom: 1px solid #333;}
+.ck-content figure.table:not(.layout-table) > table > tbody > tr > th, .ck-content figure.table:not(.layout-table) > table > thead > tr > th, .ck-content table.table:not(.layout-table) > tbody > tr > th, .ck-content table.table:not(.layout-table) > thead > tr > th {
+    padding:5px; font-size:13px; font-weight:600; vertical-align: middle; background-color:#f6f6f8 !important; color: #333; text-align: center;
+}
+.ck-content figure.table:not(.layout-table) > table > tbody > tr > td, .ck-content figure.table:not(.layout-table) > table > thead > tr > td, .ck-content table.table:not(.layout-table) > tbody > tr > td, .ck-content table.table:not(.layout-table) > thead > tr > td {
+    padding:5px; font-size:12px; font-weight:400; color: #333; vertical-align: middle; text-align: center; border-color: #dee2e6;
+}
+.ck-content .table > figcaption {background-color:#fff; font-size: 13px; font-weight: 400; text-align: right; padding-bottom: 8px;}
+
+/* 테이블 스킨 세팅 */
+.default-table-style {border-top: 2px solid #333; border-bottom: 1px solid #333;}
+.default-table-style tbody > tr > th,  .default-table-style > thead > tr > th {
+    padding:5px; font-size:13px; font-weight:600; vertical-align: middle; background-color:#f6f6f8 !important; color: #333; text-align: center;
+}
+.default-table-style tbody > tr > td,  .default-table-style > thead > tr > td {
+    padding:5px; font-size:12px; font-weight:400; color: #333; vertical-align: middle; text-align: center;
+}
+
+.no-border-table {border-top: 2px solid #333; border-bottom: 1px solid #333;}
+.no-border-table tbody > tr > th,  .no-border-table> thead > tr > th {
+    padding:5px; font-size:13px; font-weight:600; vertical-align: middle; background-color:#f6f6f8 !important; color: #333; text-align: center;
+    border-left: none !important; border-right: none !important;
+}
+.no-border-table tbody > tr > td,  .no-border-table > thead > tr > td {
+    padding:5px; font-size:12px; font-weight:400; color: #333; vertical-align: middle; text-align: center;
+    border-left: none !important; border-right: none !important;
+}
+
+/* 단락설정 */
+
+.write-mdg-box .ck.ck-editor__editable_inline {min-height:320px; padding:20px 20px 40px;}
+.write-mdg-box .ck.ck-editor__editable_inline p {padding: 0; margin: 0;}
+.ck .ck-placeholder::before, .ck.ck-placeholder::before {color: rgba(var(--ct-secondary-rgb), 0.6) !important; left:0px;}
+.ck.ck-word-count {margin-top:0.5rem;}
+
+/* img */
+.ck-editor__editable.ck-rounded-corners figure {margin:0px auto;}
+.ck-content .image>figcaption {
+    background-color:transparent; font-size:0.8rem; font-style: italic; color:#333; padding:5px 0 6px; line-height: 1.5; word-break: keep-all; border-bottom: 1px solid #e2e2e2;
+}
+
+/* cms style  */
+.quote {border:none; font-weight: 400; font-size:0.9rem; line-height:30px; text-align:justify; background-color: #f1f1f1;; padding:12.5px !important; margin:5px 0 5px 0 !important; max-width: 790px;}
+.link-line {text-decoration:underline; color: #42A1F4;}
+.reset {background-color:transparent; padding:0; font-size:18px; text-align: left;}
+
+/* 글짜 단어수 */
+.ck-word-count__words, .ck-word-count__characters {display: inline-block; margin: 0 0.5rem;}
+

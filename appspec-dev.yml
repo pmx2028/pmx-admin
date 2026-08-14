@@ -1,0 +1,44 @@
+# AWS CodeDeploy AppSpec 파일
+# - "어디에 파일을 풀 것인지"
+# - "어떤 스크립트를 어느 타이밍에 실행할지"
+# 를 정의함
+version: 0.0
+os: linux
+
+files:
+  # 배포 번들(zip) 내부의 모든 파일을
+  # EC2의 /opt/app 로 복사(overwrite)
+  - source: /
+    destination: /opt/paramount-pmx-app
+    overwrite: true
+
+permissions:
+  # scripts 디렉토리 자체 권한 설정
+  - object: /opt/paramount-pmx-app/scripts
+    owner: root
+    group: root
+    mode: 755
+    type:
+      - directory
+  # scripts 아래 모든 파일 권한 설정
+  - object: /opt/paramount-pmx-appp/scripts
+    pattern: "**"
+    owner: root
+    group: root
+    mode: 755
+    type:
+      - file
+
+hooks:
+  # 애플리케이션 시작 단계에서 실행할 스크립트
+  # 여기서 jar 교체 + systemd 재시작을 수행
+  ApplicationStart:
+    - location: scripts/dev_deploy.sh
+      timeout: 180
+      runas: root
+  # 배포 검증 단계
+  # healthcheck가 실패하면 배포 실패로 처리됨(롤백/실패 처리 흐름에 반영)
+  ValidateService:
+    - location: scripts/dev_healthcheck.sh
+      timeout: 240
+      runas: root

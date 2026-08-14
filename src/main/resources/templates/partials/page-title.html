@@ -1,0 +1,29 @@
+<th:block th:fragment="page-title(subtitle, title, subtitleLink)">
+<!-- start page title -->
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box justify-content-between d-flex align-items-md-center flex-md-row flex-column">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0 py-2">
+                    <li class="breadcrumb-item"><a href="#"><i class="ri-home-4-fill"></i></a></li>
+
+                    <!-- <li class="breadcrumb-item"><a href="javascript: void(0);" th:text="${subtitle}">subtitle</a></li> -->
+                    <!-- subtitleLink가 있을 때 -->
+                    <li class="breadcrumb-item" th:if="${subtitleLink}">
+                        <a th:href="${subtitleLink}" th:text="${subtitle}">subtitle</a>
+                    </li>
+
+                    <!-- subtitleLink가 없을 때 -->
+                    <li class="breadcrumb-item" th:unless="${subtitleLink}">
+                        <a href="javascript: void(0);" th:text="${subtitle}">subtitle</a>
+                    </li>
+
+                    <li class="breadcrumb-item active" th:text="${title}">title</li>
+                </ol>
+            </nav><!--// Breadcrumb -->
+        </div>
+    </div>
+</div>
+<!-- end page title -->
+</th:block>

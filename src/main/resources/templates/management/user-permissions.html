@@ -1,0 +1,140 @@
+<!--
+  페이지 생성시 해당 페이지 구조 복붙해서 사용하면됩니다.
+-->
+<!DOCTYPE html>
+<th:block th:replace="~{layout/base-layout :: base-layout(
+            pageContent=~{::pageContent},
+            pageHead=~{::pageHead},
+            pageModal=~{::pageModal},
+            pageScript=~{::pageScript},
+            title='사용자 권한 매핑',
+            subtitle='권한관리',
+            subtitleLink='/manage/auth'
+        )}">
+
+    <!-- head block -->
+    <th:block th:fragment="pageHead">
+        <!-- 여기에 추가적으로 필요한 head 내용을 넣습니다. -->
+        <!-- Daterangepicker css -->
+        <link href="/vendor/daterangepicker/daterangepicker.css" rel="stylesheet" type="text/css" />
+
+        <!-- Datatables css -->
+        <link href="/vendor/datatables.net-bs5/css/dataTables.bootstrap5.min.css" rel="stylesheet" type="text/css" />
+        <link href="/vendor/datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css" rel="stylesheet"
+              type="text/css" />
+
+        <!-- custom css  -->
+        <link href="/css/management.css" rel="stylesheet" type="text/css" />
+    </th:block>
+
+    <!-- content block -->
+    <th:block th:fragment="pageContent">
+        <!-- 여기에 페이지 본문 내용을 넣습니다. -->
+        <th:block th:replace="~{partials/mobile-not-supported-notice :: mobile-not-supported-notice('manage-user-permission-mobile-notice')}"></th:block>
+        <!-- 2-Column Layout -->
+        <div class="row g-2 management-mobile-notice-target">
+            <!-- Left: user List -->
+            <div class="col-12 col-lg-5">
+                <div class="card h-100" style="min-height: 600px;">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <strong>조직 목록</strong>
+                        <div class="d-flex gap-2">
+                            <button type="button" id="orgAddBtn" class="btn btn-outline-secondary" >+ 사용자추가</button>
+                            <button type="button" id="removeActiveBtn" class="btn btn-dark">선택 삭제</button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush user-list hover-bg" style="max-height: 520px; overflow: auto">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Permission Editor -->
+            <div class="col-12 col-lg-7">
+                <div class="card h-100" style="min-height: 600px;">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <strong>권한 설정 - <span id="selected-user-name">사용자 선택 안함</span></strong>
+                    </div>
+
+                    <div class="card-body">
+                        <!-- Permissions Grid -->
+                        <div class="d-flex flex-column flex-md-row gap-2 permission-grid d-none">
+                            <!-- 왼쪽: 행동 권한 -->
+                            <div class="flex-fill">
+                                <p class="fw-bold mb-2">행동 권한</p>
+                                <div class="list-group action-permission-list small hover-bg"></div>
+                            </div>
+
+                            <!-- 오른쪽: 페이지 접근 권한 -->
+                            <div class="flex-fill">
+                                <p class="fw-bold mb-2">페이지 권한</p>
+                                <div class="list-group page-permission-list small hover-bg"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-footer d-flex justify-content-end align-items-center btn-grid d-none">
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-outline-secondary data-reset" >되돌리기</button>
+                            <button type="button" class="btn btn-dark data-save">저장</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div><!-- // row -->
+    </th:block>
+
+    <!-- modal block -->
+    <th:block th:fragment="pageModal">
+        <!-- 여기에 페이지 모달 내용을 넣습니다. -->
+        <!-- 모달 -->
+        <div class="modal fade" id="userPermissionModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content" style="height:70vh;">
+                    <div class="modal-header">
+                        <h5 class="modal-title">사용자 추가</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="d-flex justify-content-end mb-2">
+                            <div class="input-group" style="width: 400px;">
+                                <input type="text" id="search-text" class="form-control" placeholder="이름 검색">
+                                <button type="button" class="btn btn-primary border-primary" id="btn-search">
+                                    <i class="ri-search-line me-1"></i> 검색
+                                </button>
+                                <button type="button" class="btn btn-soft-dark shadow-none ms-1" id="btn-reset">
+                                    <i class="ri-loop-left-fill me-1"></i> 초기화
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- table #dataTable - DataTable 로드 -->
+                        <table id="staffDataTable" class="table table-hover dt-responsive nowrap w-100 text-center" style="cursor: pointer;">
+                        </table><!--//table -->
+                        <div class="dt-footer mt-2" data-table="staffDataTable"></div>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-end align-items-center">
+                        <!-- 왼쪽: 선택된 사용자 표시 -->
+                        <div id="selectedUserLabel" class="text-muted">
+                            선택된 사용자: 없음
+                        </div>
+                        <!-- 오른쪽: 버튼들 -->
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">닫기</button>
+                            <button type="button" class="btn btn-primary" id="addUserBtn">추가</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </th:block>
+
+    <!-- script block -->
+    <th:block th:fragment="pageScript">
+        <!-- 여기에 추가적으로 필요한 script 내용을 넣습니다. -->
+        <script type="module" src="/js/management/user-permission.js"></script>
+    </th:block>
+
+</th:block>

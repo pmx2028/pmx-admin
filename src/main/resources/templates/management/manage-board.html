@@ -1,0 +1,77 @@
+<!--
+  페이지 생성시 해당 페이지 구조 복붙해서 사용하면됩니다.
+-->
+<!DOCTYPE html>
+<th:block
+        th:replace="~{layout/base-layout :: base-layout(
+            pageContent=~{::pageContent},
+            pageHead=~{::pageHead},
+            pageModal=~{::pageModal},
+            pageScript=~{::pageScript},
+            title='게시판관리',
+            subtitle='관리'
+          )}">
+
+
+    <!-- head block -->
+    <th:block th:fragment="pageHead">
+        <!-- 여기에 추가적으로 필요한 head 내용을 넣습니다. -->
+        <!-- Datatables css -->
+        <link href="/vendor/datatables.net-bs5/css/dataTables.bootstrap5.min.css" rel="stylesheet" type="text/css" />
+        <link href="/vendor/datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css" rel="stylesheet" type="text/css" />
+        <!-- custom css  -->
+        <link href="/css/management.css" rel="stylesheet" type="text/css" />
+    </th:block>
+
+    <!-- content block -->
+    <th:block th:fragment="pageContent">
+        <!-- 여기에 페이지 본문 내용을 넣습니다. -->
+        <!-- row -->
+        <div class="row">
+            <!-- col-->
+            <div class="col-12 mobile-p0">
+                <!-- card -->
+                <div class="card">
+                    <!-- card body-->
+                    <div class="card-body p-2">
+                        <form>
+                            <!-- 버튼 -->
+                            <div class="col-12 boards-btn mb-3">
+                                <div class="col-sm-12 col-md-3">
+                                    <button type="button" id="openBbsModalBtn" class="btn btn-primary"
+                                            data-bs-toggle="modal" data-bs-target="#board-modal" data-mode="create">
+                                        <i class="ri-add-circle-line me-1"></i><span> 게시판추가</span>
+                                    </button>
+                                </div>
+                            </div><!--//버튼 -->
+
+                            <!-- table #dataTable - DataTable 로드 -->
+                            <div class="scrollable-container" data-simplebar data-simplebar-auto-hide="false">
+                                <div class="table-inner-wrapper">
+                                    <table id="dataTable" class="table table-striped table-hover w-100 custom bbs-editor board-table">
+                                    </table>
+                                </div>
+                            </div><!--//table -->
+                            <div class="dt-footer" data-table="dataTable"></div>
+                        </form>
+                    </div><!--// card body-->
+                </div> <!--// card -->
+            </div><!--//col-->
+        </div><!--//row -->
+    </th:block>
+
+    <!-- modal block -->
+    <th:block th:fragment="pageModal">
+        <!-- 여기에 페이지 모달 내용을 넣습니다. -->
+        <th:block th:replace="~{partials/modal-board-manage :: modal-board-manage}"></th:block>
+        
+    </th:block>
+
+    <!-- script block -->
+    <th:block th:fragment="pageScript">
+        <!-- 여기에 추가적으로 필요한 script 내용을 넣습니다. -->
+        <script type="module" src="/js/management/manage-board.js"></script>
+
+    </th:block>
+
+</th:block>

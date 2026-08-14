@@ -1,0 +1,301 @@
+@font-face {
+  font-family: 'file-icon';
+  src:  url('../fonts/file-icon.eot?w26oaf');
+  src:  url('../fonts/file-icon.eot?w26oaf#iefix') format('embedded-opentype'),
+    url('../fonts/file-icon.ttf?w26oaf') format('truetype'),
+    url('../fonts/file-icon.woff?w26oaf') format('woff'),
+    url('../fonts/file-icon.svg?w26oaf#file-icon') format('svg');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+i {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: 'file-icon' !important;
+  speak: never;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.ic-file-doc .path1:before {
+  content: "\e900";
+  color: rgb(41, 155, 246);
+}
+.ic-file-doc .path2:before {
+  content: "\e901";
+  margin-left: -0.759765625em;
+  color: rgb(108, 117, 125);
+}
+.ic-file-doc .path3:before {
+  content: "\e902";
+  margin-left: -0.759765625em;
+  color: rgb(249, 249, 249);
+}
+.ic-file-doc .path4:before {
+  content: "\e903";
+  margin-left: -0.759765625em;
+  color: rgb(249, 249, 249);
+}
+.ic-file-doc .path5:before {
+  content: "\e904";
+  margin-left: -0.759765625em;
+  color: rgb(249, 249, 249);
+}
+.ic-file-doc-b .path1:before {
+  content: "\e905";
+  color: rgb(108, 117, 125);
+}
+.ic-file-doc-b .path2:before {
+  content: "\e906";
+  margin-left: -0.759765625em;
+  color: rgb(108, 117, 125);
+}
+.ic-file-doc-b .path3:before {
+  content: "\e907";
+  margin-left: -0.759765625em;
+  color: rgb(108, 117, 125);
+}
+.ic-file-doc-b .path4:before {
+  content: "\e908";
+  margin-left: -0.759765625em;
+  color: rgb(249, 249, 249);
+}
+.ic-file-doc-b .path5:before {
+  content: "\e909";
+  margin-left: -0.759765625em;
+  color: rgb(249, 249, 249);
+}
+.ic-file-doc-b .path6:before {
+  content: "\e90a";
+  margin-left: -0.759765625em;
+  color: rgb(249, 249, 249);
+}
+.ic-file-ppt .path1:before {
+  content: "\e90b";
+  color: rgb(247, 71, 58);
+}
+.ic-file-ppt .path2:before {
+  content: "\e90c";
+  margin-left: -0.759765625em;
+  color: rgb(108, 117, 125);
+}
+.ic-file-ppt .path3:before {
+  content: "\e90d";
+  margin-left: -0.759765625em;
+  color: rgb(249, 249, 249);
+}
+.ic-file-ppt .path4:before {
+  content: "\e90e";
+  margin-left: -0.759765625em;
+  color: rgb(249, 249, 249);
+}
+.ic-file-ppt .path5:before {
+  content: "\e90f";
+  margin-left: -0.759765625em;
+  color: rgb(249, 249, 249);
+}
+.ic-file-ppt-b .path1:before {
+  content: "\e910";
+  color: rgb(108, 117, 125);
+}
+.ic-file-ppt-b .path2:before {
+  content: "\e911";
+  margin-left: -0.759765625em;
+  color: rgb(108, 117, 125);
+}
+.ic-file-ppt-b .path3:before {
+  content: "\e912";
+  margin-left: -0.759765625em;
+  color: rgb(249, 249, 249);
+}
+.ic-file-ppt-b .path4:before {
+  content: "\e913";
+  margin-left: -0.759765625em;
+  color: rgb(249, 249, 249);
+}
+.ic-file-ppt-b .path5:before {
+  content: "\e914";
+  margin-left: -0.759765625em;
+  color: rgb(249, 249, 249);
+}
+.ic-file-xls .path1:before {
+  content: "\e915";
+  color: rgb(23, 164, 151);
+}
+.ic-file-xls .path2:before {
+  content: "\e916";
+  margin-left: -0.759765625em;
+  color: rgb(108, 117, 125);
+}
+.ic-file-xls .path3:before {
+  content: "\e917";
+  margin-left: -0.759765625em;
+  color: rgb(249, 249, 249);
+}
+.ic-file-xls .path4:before {
+  content: "\e918";
+  margin-left: -0.759765625em;
+  color: rgb(249, 249, 249);
+}
+.ic-file-xls .path5:before {
+  content: "\e919";
+  margin-left: -0.759765625em;
+  color: rgb(249, 249, 249);
+}
+.ic-file-xls-b .path1:before {
+  content: "\e91a";
+  color: rgb(108, 117, 125);
+}
+.ic-file-xls-b .path2:before {
+  content: "\e91b";
+  margin-left: -0.759765625em;
+  color: rgb(108, 117, 125);
+}
+.ic-file-xls-b .path3:before {
+  content: "\e91c";
+  margin-left: -0.759765625em;
+  color: rgb(249, 249, 249);
+}
+.ic-file-xls-b .path4:before {
+  content: "\e91d";
+  margin-left: -0.759765625em;
+  color: rgb(249, 249, 249);
+}
+.ic-file-xls-b .path5:before {
+  content: "\e91e";
+  margin-left: -0.759765625em;
+  color: rgb(249, 249, 249);
+}
+.ic-file-pdf .path1:before {
+  content: "\e91f";
+  color: rgb(253, 126, 20);
+}
+.ic-file-pdf .path2:before {
+  content: "\e920";
+  margin-left: -0.759765625em;
+  color: rgb(108, 117, 125);
+}
+.ic-file-pdf .path3:before {
+  content: "\e921";
+  margin-left: -0.759765625em;
+  color: rgb(249, 249, 249);
+}
+.ic-file-pdf .path4:before {
+  content: "\e922";
+  margin-left: -0.759765625em;
+  color: rgb(249, 249, 249);
+}
+.ic-file-pdf .path5:before {
+  content: "\e923";
+  margin-left: -0.759765625em;
+  color: rgb(249, 249, 249);
+}
+.ic-file-pdf-b .path1:before {
+  content: "\e924";
+  color: rgb(108, 117, 125);
+}
+.ic-file-pdf-b .path2:before {
+  content: "\e925";
+  margin-left: -0.759765625em;
+  color: rgb(108, 117, 125);
+}
+.ic-file-pdf-b .path3:before {
+  content: "\e926";
+  margin-left: -0.759765625em;
+  color: rgb(249, 249, 249);
+}
+.ic-file-pdf-b .path4:before {
+  content: "\e927";
+  margin-left: -0.759765625em;
+  color: rgb(249, 249, 249);
+}
+.ic-file-pdf-b .path5:before {
+  content: "\e928";
+  margin-left: -0.759765625em;
+  color: rgb(249, 249, 249);
+}
+.ic-file-hwp .path1:before {
+  content: "\e929";
+  color: rgb(66, 84, 186);
+}
+.ic-file-hwp .path2:before {
+  content: "\e92a";
+  margin-left: -0.759765625em;
+  color: rgb(108, 117, 125);
+}
+.ic-file-hwp .path3:before {
+  content: "\e92b";
+  margin-left: -0.759765625em;
+  color: rgb(249, 249, 249);
+}
+.ic-file-hwp .path4:before {
+  content: "\e92c";
+  margin-left: -0.759765625em;
+  color: rgb(249, 249, 249);
+}
+.ic-file-hwp .path5:before {
+  content: "\e92d";
+  margin-left: -0.759765625em;
+  color: rgb(249, 249, 249);
+}
+.ic-file-hwp-b .path1:before {
+  content: "\e92e";
+  color: rgb(108, 117, 125);
+}
+.ic-file-hwp-b .path2:before {
+  content: "\e92f";
+  margin-left: -0.759765625em;
+  color: rgb(108, 117, 125);
+}
+.ic-file-hwp-b .path3:before {
+  content: "\e930";
+  margin-left: -0.759765625em;
+  color: rgb(249, 249, 249);
+}
+.ic-file-hwp-b .path4:before {
+  content: "\e931";
+  margin-left: -0.759765625em;
+  color: rgb(249, 249, 249);
+}
+.ic-file-hwp-b .path5:before {
+  content: "\e932";
+  margin-left: -0.759765625em;
+  color: rgb(249, 249, 249);
+}
+.ic-file-img:before {
+  content: "\e933";
+  color: #6c757d;
+}
+.ic-file-basic:before {
+  content: "\e934";
+  color: #6c757d;
+}
+
+/* 아이콘 부모 (i 태그) */
+[class^="ic-file-"], [class*=" ic-file-"] {
+  display: inline-flex !important; align-items: center; justify-content: center; position: relative !important;
+  width: 1em !important; height: 1em !important; line-height: 1 !important; vertical-align: middle; flex-shrink: 0; font-size: 1.7rem !important; /* 크기는 여기서 조절 */
+}
+
+/* 내부 모든 조각 (span 및 path 클래스들) */
+[class^="ic-file-"] [class^="path"],
+[class^="ic-file-"] span {
+  position: absolute !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%); width: 1em !important;
+  height: 1em !important; display: block !important; margin: 0 !important;  padding: 0 !important;
+}
+
+/* 가상 요소(icon) 설정 */
+[class^="ic-file-"] [class^="path"]:before,
+[class^="ic-file-"] span:before { display: block !important; margin: 0 !important; width: 1em !important; text-align: center !important; }
+
+/* ic-file-로 시작하는 클래스 내부의 모든 span의 after 컨텐츠 초기화 */
+[class^="ic-file-"] span::after,
+[class*=" ic-file-"] span::after { content: "" !important; margin: 0 !important; padding: 0 !important; }
