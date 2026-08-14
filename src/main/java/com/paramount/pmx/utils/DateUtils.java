@@ -1,11 +1,11 @@
 package com.paramount.pmx.utils;
 
-import java.util.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Date;
 
 public class DateUtils {
     //type에 따라 날짜 사이 구하기. (end 불포함)
@@ -15,7 +15,7 @@ public class DateUtils {
         try {
             Date toDate = format.parse(start.replace("-",""));
             Date fromDate = format.parse(end.replace("-",""));
-
+    
             Long baseHour = (long) (60 * 60 * 1000);         // 시
             Long baseDay = 24 * baseHour; 	        // 일
             Long baseMonth = baseDay * 30;		    // 월
@@ -52,7 +52,7 @@ public class DateUtils {
         try {
             Date toDate = format.parse(start.replace("-",""));
             Date fromDate = format.parse(end.replace("-",""));
-
+    
             Long baseHour = (long) (60 * 60 * 1000);         // 시
             Long baseDay = 24 * baseHour; 	        // 일
             Long baseMonth = baseDay * 30;		    // 월
@@ -103,7 +103,7 @@ public class DateUtils {
     //                             , endDt.plusDays(1).atStartOfDay()
     //                         ).toDays();
     //     }
-
+        
     //     return result;
     // }
 

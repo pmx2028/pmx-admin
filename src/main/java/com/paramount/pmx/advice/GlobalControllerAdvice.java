@@ -1,24 +1,35 @@
 package com.paramount.pmx.advice;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.paramount.pmx.service.board.BoardService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
-@ControllerAdvice
+
+@Slf4j
+@ControllerAdvice()
+@RequiredArgsConstructor
 public class GlobalControllerAdvice {
+
     @Value("${spring.profiles.active}")
-    private String env;
+    private String activeProfile;
+
+    private final BoardService boardService;
 
     @ModelAttribute
     public void handleRequest(
-        HttpServletRequest request
-        , HttpServletResponse response
-        , Model model
+            HttpServletRequest request
+            , HttpServletResponse response
+            , Model model
     ){
-        model.addAttribute("_env", env);
+        model.addAttribute("activeProfile", activeProfile);
+        model.addAttribute("requestURI", request.getRequestURI()); // 타임리프 경로 조건에 사용됨
+        model.addAttribute("boardList", boardService.getBoardSideMenu());
+
     }
 }

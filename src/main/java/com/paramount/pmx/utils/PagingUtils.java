@@ -23,7 +23,7 @@ public class PagingUtils {
 
         if(pageCnt >= pageBlockSize){
             pageCnt = pageBlockSize - 1;
-        }
+        } 
 
         double maxPageNo = minPageNo + pageCnt;
 

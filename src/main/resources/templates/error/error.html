@@ -1,0 +1,92 @@
+<!--
+  페이지 생성시 해당 페이지 구조 복붙해서 사용하면됩니다.
+-->
+<!DOCTYPE html>
+<th:block
+        th:replace="~{layout/base-layout :: base-layout(
+            pageContent=~{::pageContent},
+            pageHead=~{::pageHead},
+            pageModal=~{::pageModal},
+            pageScript=~{::pageScript},
+            title='',
+            subtitle=''
+          )}">
+
+
+    <!-- head block -->
+    <th:block th:fragment="pageHead">
+
+    </th:block>
+    <!-- content block -->
+    <th:block th:fragment="pageContent">
+        <!-- content -->
+        <div class="account-pages pt-2 pt-sm-5 pb-4 pb-sm-5 position-relative">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-xxl-4 col-lg-5">
+                        <div class="text-center">
+                            <h1 class="error-title" th:text="${status}"></h1>
+                            <h5 class="pt-3"
+                                th:text="${#messages.msgOrNull('error.http.' + status) ?: '알 수 없는 오류가 발생했습니다'}">
+                            </h5>
+<!--                            <h5 class="pt-3"-->
+<!--                                th:text="#{${'error.http.' + status} ?: '알 수 없는 오류가 발생했습니다'}">-->
+<!--                            </h5>-->
+                        </div>
+
+                        <div class="d-flex justify-content-center mt-3">
+                            <a href="javascript:history.go(-1);" class="btn btn-primary w-100" style="max-width: 100px;">
+                                <i class="icon-arrow-left8 mr-2"></i> BACK
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div><!--// container-fluid -->
+        </div><!--// content -->
+    </th:block>
+    <!-- ============================================================== -->
+    <!-- End Page content -->
+    <!-- ============================================================== -->
+    <!-- modal block -->
+    <th:block th:fragment="pageModal">
+
+    </th:block>
+
+    <!-- script block -->
+    <th:block th:fragment="pageScript">
+
+        <!-- 여기에 추가적으로 필요한 script 내용을 넣습니다. -->
+        <!-- Quill Editor js -->
+        <script src="/vendor/fullcalendar/main.min.js"></script>
+
+        <script th:inline="none">
+            document.addEventListener('DOMContentLoaded', function () {
+                function openModal(modalId) {
+                    const modalEl = document.getElementById(modalId);
+                    if (modalEl) (bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl)).show();
+                    else console.error(`Modal ${modalId} not found.`);
+                }
+
+                function generateEvents(title, dates, className, modalId) {
+                    return dates.map(date => ({ title, start: date, classNames: [className], extendedProps: { modalId } }));
+                }
+                function rerenderCalendarOnTabShow(tabId, calendarId) {
+                    document.querySelector(tabId)?.addEventListener('shown.bs.tab', () => {
+                        calendarInstances[calendarId]?.render();
+                    });
+                }
+
+                function debounce(func, wait) {
+                    let timeout;
+                    return function () {
+                        clearTimeout(timeout);
+                        timeout = setTimeout(() => func.apply(this, arguments), wait);
+                    };
+                }
+
+            });
+        </script>
+
+    </th:block>
+</th:block>
+

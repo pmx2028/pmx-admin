@@ -1,39 +1,49 @@
 package com.paramount.pmx.security;
 
+import com.paramount.pmx.config.SecurityConfig;
+import com.paramount.pmx.utils.HttpServletUtils;
+import jakarta.servlet.http.HttpSession;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
+
 import java.io.IOException;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
-
-import com.paramount.pmx.utils.HttpServletUtils;
-
-import lombok.extern.slf4j.Slf4j;
-
 @Slf4j
-public class CustomRememberMeAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+public class CustomRememberMeAuthenticationSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
 
-    @Autowired
-    private CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
+    private final CustomAuthenticationSuccessHandler authenticationSuccessHandler;
+
+    public CustomRememberMeAuthenticationSuccessHandler(CustomAuthenticationSuccessHandler authenticationSuccessHandler) {
+        this.authenticationSuccessHandler = authenticationSuccessHandler;
+        setDefaultTargetUrl(SecurityConfig.LOGIN_SUCCESS_URL);
+        setAlwaysUseDefaultTargetUrl(false);
+    }
 
     @Override
     public void onAuthenticationSuccess(
-        HttpServletRequest request,
-        HttpServletResponse response,
-        Authentication authentication
-    ) throws IOException, ServletException {
-        CustomUserDetails userDetails = (CustomUserDetails)authentication.getPrincipal();
-        log.info("[{}] {}({}) 자동 로그인 성공", HttpServletUtils.getClientIp(request), userDetails.getUserId());
+            jakarta.servlet.http.HttpServletRequest request,
+            jakarta.servlet.http.HttpServletResponse response,
+            Authentication authentication
+    ) throws IOException, jakarta.servlet.ServletException {
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        //redis key 삭제
-        customAuthenticationSuccessHandler.destroyRedisSession(userDetails.getUserId());
+        HttpSession currentSession = request.getSession(false);
+        String currentSessionId = currentSession == null ? null : currentSession.getId();
+        authenticationSuccessHandler.destroyRedisSession(userDetails.getUserId(), currentSessionId);
 
-        super.setAlwaysUseDefaultTargetUrl(true);
-        super.setDefaultTargetUrl(request.getRequestURL().toString());
-        super.onAuthenticationSuccess(request, response, authentication);
+        log.info("[REMEMBER-ME SUCCESS] ip={}, user={}", HttpServletUtils.getClientIp(request), userDetails.getUserId());
+        getRedirectStrategy().sendRedirect(request, response, currentRequestUrl(request));
+    }
+
+    static String currentRequestUrl(jakarta.servlet.http.HttpServletRequest request) {
+        String requestUri = request.getRequestURI();
+        String queryString = request.getQueryString();
+
+        if (queryString == null || queryString.isBlank()) {
+            return requestUri;
+        }
+
+        return requestUri + "?" + queryString;
     }
 }

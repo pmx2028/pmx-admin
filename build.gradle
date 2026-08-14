@@ -6,108 +6,113 @@ plugins {
 
 group = 'com.paramount'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '11'
 
-configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
 
-processResources() {
-    duplicatesStrategy = 'EXCLUDE'
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
 }
 
 repositories {
-	mavenCentral()
-    maven { url "https://repo.spring.io/milestone" }
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+}
+
+ext {
+    springCloudAwsVersion = '3.3.0'  // Boot 3.2.x ? 3.3.x ?? ??
+    awsSdkVersion         = '2.25.15' // AWS SDK v2 ?? ?? ??
 }
 
 dependencies {
-    //필수
-	implementation 'org.springframework.boot:spring-boot-starter-freemarker'                /*템플릿 엔진으로 Freemarker 사용*/
-	implementation 'org.springframework.boot:spring-boot-starter-web'                       /*웹개발을 위한 boot 패키지*/
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
+    implementation 'com.github.ua-parser:uap-java:1.6.0'
 
-     //database 관련
-    implementation 'org.apache.logging.log4j:log4j-api:2.17.0'                              /* log 출력을 위한 log4j 사용 - 보안취약점 발견 대처 */
-    implementation 'org.apache.logging.log4j:log4j-core:2.17.0'                             /* log 출력을 위한 log4j 사용 - 보안취약점 발견 대처 */
-    implementation 'org.apache.logging.log4j:log4j-bom:2.17.0'                              /* log 출력을 위한 log4j 사용 - 보안취약점 발견 대처 */
-    implementation 'mysql:mysql-connector-java'                                             /* mysql jdbc 드라이버 */
-    implementation 'org.bgee.log4jdbc-log4j2:log4jdbc-log4j2-jdbc4.1:1.16'                  /* 쿼리 로그 출력을 위한 log4jdbc추가 설정 */
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'                  /* 트랜잭션 API로 JPA사용*/
-    implementation 'org.apache.commons:commons-lang3'                                       /* 아파치 스트링 관련 함수를 사용하기 위함 */
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'                /*??? ??????? Redis ??*/
+    implementation 'org.springframework.session:spring-session-data-redis'                  /*???? Redis? ??*/
 
     //security
-    implementation 'org.springframework.boot:spring-boot-starter-security'                  /*보안을 위해 Spring Security 사용*/
-    implementation 'org.springframework.security:spring-security-core'                      /*보안을 위해 Spring Security 사용 : 인증과 인가 기능을 구현하기 위한 핵심적인 컴포넌트*/
-    implementation 'org.springframework.security:spring-security-config'                    /*보안을 위해 Spring Security 사용 : 각 모듈에서 제공하는 컴포넌트의 설정을 지원하기 위한 컴포넌트*/
-    implementation 'org.springframework.security:spring-security-web'                       /*보안을 위해 Spring Security 사용 : 웹 애플리케이션의 보안 기능을 구현하기 위한 컴포넌트*/
+    implementation 'org.springframework.boot:spring-boot-starter-security'                  /*??? ?? Spring Security ??*/
+    implementation 'org.springframework.security:spring-security-core'                      /*??? ?? Spring Security ?? : ??? ?? ??? ???? ?? ???? ????*/
+    implementation 'org.springframework.security:spring-security-config'                    /*??? ?? Spring Security ?? : ? ???? ???? ????? ??? ???? ?? ????*/
+    implementation 'org.springframework.security:spring-security-web'                       /*??? ?? Spring Security ?? : ? ??????? ?? ??? ???? ?? ????*/
 
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'                /*메모리 데이터베이스로 Redis 사용*/
-    implementation 'org.springframework.session:spring-session-data-redis'                  /*세션보관 Redis를 사용*/
+    /* ===== Spring Cloud AWS ===== */
+    implementation platform('software.amazon.awssdk:bom:2.25.16') // 2025년 5월 기준 최신 BOM
+    implementation 'software.amazon.awssdk:s3'
+    implementation 'software.amazon.awssdk:auth'
+    implementation 'software.amazon.awssdk:sts' // 권한 위임 시 필요
 
-    //annotation
-    implementation 'org.mapstruct:mapstruct:1.3.1.Final'                                    /*DTO ENTITY 매핑을 위한 매핑툴 (롬복보다 먼저 와야함)*/
-	annotationProcessor 'org.mapstruct:mapstruct-processor:1.3.1.Final'                     /*DTO ENTITY 매핑을 위한 매핑툴 */
-    compileOnly 'org.projectlombok:lombok'                                                  /*롬복 어노테이션 사용*/
-    annotationProcessor 'org.projectlombok:lombok'                                          /*롬복 어노테이션 사용*/
-    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'      /*Spring Boot 어노테이션 사용*/
+    /* ===== UTIL ===== */
+    implementation 'commons-net:commons-net:3.10.0' // FTPClient (Apache Commons Net)
+    implementation 'commons-io:commons-io:2.15.0'
+    implementation 'org.apache.tika:tika-core:2.9.1'
+    implementation 'org.apache.commons:commons-lang3:3.18.0'
+    implementation 'org.jsoup:jsoup:1.18.1'
 
-    //component
-    implementation 'no.api.freemarker:freemarker-java8:1.3.0'                               /* freemarker에서 java8 LocalDateTime을 사용하기 위함 */
-    implementation 'commons-io:commons-io:2.6'                                              /* 아파치 파일 관련 함수를 사용하기 위함 */
-    implementation group: 'eu.bitwalker', name: 'UserAgentUtils', version: '1.21'           /* user agent parser */
-    implementation group: 'com.google.code.gson', name: 'gson', version: '2.8.2'            /* json 생성, 파싱 */
+    /* === SFTP (자바에서 SSH/SFTP) === */
+    implementation 'com.github.mwiede:jsch:0.2.16'             // 유지보수되는 JSch 포크
+    implementation 'org.bouncycastle:bcprov-jdk18on:1.78.1'    // 권장(최신 키/암호군 호환성)
 
-    //datacenter용 신규추가
-    implementation group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-xml', version: '2.11.3' /* xml 파서 */
 
-    //hibernate search
-    implementation 'org.hibernate.search:hibernate-search-mapper-orm:6.1.6.Final'          /* orm 매핑을 위함 */
-    implementation 'org.hibernate.search:hibernate-search-backend-elasticsearch:6.1.6.Final'      /* elasticsearch analyzing 할 때 사용 */
-    implementation 'javax.batch:javax.batch-api:1.0-b16'                                    /* 부분 인덱싱 처리 시 필요 */
+    /* ===== photo 생성 UTIL ===== */
+    //implementation "org.bytedeco:opencv-platform:4.11.0-1.5.12"
+    implementation 'org.openpnp:opencv:4.5.5-1'
+    // ImageIO 보강(선택)
+    implementation 'com.twelvemonkeys.imageio:imageio-core:3.10.1'
+    implementation 'com.twelvemonkeys.imageio:imageio-jpeg:3.10.1'
 
-    //엑셀 다운로드
-    implementation group: 'org.apache.poi', name: 'poi', version: '5.0.0'                   /* 마이크로소프트 오피스 파일 포맷(ex. xlsx, ppt ...)을 자바 언어로서 읽고 쓰는 기능을 제공해주는 라이브러리*/
-    implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '5.0.0'             /* 마이크로소프트 오피스 파일 포맷(ex. xlsx, ppt ...)을 자바 언어로서 읽고 쓰는 기능을 제공해주는 라이브러리*/
+    // 인스타그램 썸네일 생성시 사용
+    implementation 'net.coobird:thumbnailator:0.4.20'
 
-    // 메일 발송
-    implementation 'org.springframework.boot:spring-boot-starter-mail'                      /*이메일 발송을 위해 사용*/
 
-    implementation 'org.springframework.mobile:spring-mobile-device:1.1.3.RELEASE'              /* device 구분(pc, mobile) */
+    /* === 키워드 추출 === */
+    implementation 'com.github.shin285:KOMORAN:3.3.9'
 
-    // AWS S3
-    implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-aws', version: '2.2.1.RELEASE'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
 
-    //
-    implementation 'software.amazon.awssdk:s3:2.17.100' // AWS S3 SDK
-    implementation 'software.amazon.awssdk:auth' // AWS 인증 관련
 
-	//test
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'                         /*개발용 도구 live roload 등 패키지*/
-    testImplementation('org.springframework.boot:spring-boot-starter-test') {               /*테스트를 위한 junit 사용*/
-		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
-	}
+    // 엑셀
+    implementation 'org.apache.poi:poi-ooxml:5.2.5'
+
+    compileOnly 'org.projectlombok:lombok'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    runtimeOnly 'com.mysql:mysql-connector-j'
+    runtimeOnly 'p6spy:p6spy:3.9.1'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+
+    // 7.17 대신 8.x 버전을 사용하도록 설정
+    //implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
+    //implementation 'co.elastic.clients:elasticsearch-java:8.15.0' // 8.x 최신 버전 권장
+
+    // JSON(프로젝트에 이미 있으면 생략)
+    implementation "com.fasterxml.jackson.core:jackson-databind"
 
 }
 
-test {
-	useJUnitPlatform()
+tasks.named('test') {
+    useJUnitPlatform()
 }
 
-sourceSets {
-    if (!project.hasProperty('profile') || !profile) {
-        ext.profile = 'local'
-    }
-    main {
-        ext{
-            version "${profile}"
-        }
-        java {
-            srcDirs "src/main/java"
-        }
-        resources {
-            srcDirs "src/main/resources", "src/main/resources-env/${profile}"
-        }
-    }
+tasks.withType(Copy).configureEach {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE   // ?? INCLUDE, WARN
 }
+
+
+

@@ -1,15 +1,9 @@
 package com.paramount.pmx.interceptor;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-// import org.springframework.lang.Nullable;
+import com.paramount.pmx.security.CustomUserDetails;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
@@ -17,7 +11,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.util.WebUtils;
 
-import com.paramount.pmx.security.CustomUserDetails;
+import java.util.*;
 
 @Component
 public class CustomInterceptor implements HandlerInterceptor  {
@@ -50,7 +44,7 @@ public class CustomInterceptor implements HandlerInterceptor  {
         if(modelAndView != null) {
             Authentication auth = (Authentication)servletRequest.getUserPrincipal();
             if(auth != null && auth.isAuthenticated()) {
-
+                
                 Object principal = auth.getPrincipal();
                 CustomUserDetails userDetails = (CustomUserDetails) principal;
                 userDetails.setPassword("");

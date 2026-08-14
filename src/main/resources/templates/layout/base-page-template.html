@@ -1,0 +1,37 @@
+<!--
+  페이지 생성시 해당 페이지 구조 복붙해서 사용하면됩니다.
+-->
+<!DOCTYPE html>
+<th:block
+        th:replace="~{layout/base-layout :: base-layout(
+            pageContent=~{::pageContent},
+            pageHead=~{::pageHead},
+            pageModal=~{::pageModal},
+            pageScript=~{::pageScript},
+            title='',
+            subtitle='',
+            containerFluidExtraClass=''
+          )}">
+
+
+  <!-- head block -->
+  <th:block th:fragment="pageHead">
+    <!-- 여기에 추가적으로 필요한 head 내용을 넣습니다. -->
+  </th:block>
+
+  <!-- content block -->
+  <th:block th:fragment="pageContent">
+    <!-- 여기에 페이지 본문 내용을 넣습니다. -->
+  </th:block>
+
+  <!-- modal block -->
+  <th:block th:fragment="pageModal">
+    <!-- 여기에 페이지 모달 내용을 넣습니다. -->
+  </th:block>
+
+  <!-- script block -->
+  <th:block th:fragment="pageScript">
+    <!-- 여기에 추가적으로 필요한 script 내용을 넣습니다. -->
+  </th:block>
+
+</th:block>

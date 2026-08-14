@@ -1,10 +1,10 @@
 package com.paramount.pmx.utils;
 
-import java.util.Iterator;
-
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
+
+import java.util.Iterator;
 
 public class SpecUtils {
     // Sort에 새로운 Sort를 추가하는 function (기존에 존재하는 경우 무시)

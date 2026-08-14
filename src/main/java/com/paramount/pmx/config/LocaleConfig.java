@@ -22,7 +22,7 @@ public class LocaleConfig implements WebMvcConfigurer  {
     @Value("${spring.messages.cache-duration}")
     int messagesCacheSeconds;
 
-    @Bean
+    @Bean 
     public ReloadableResourceBundleMessageSource messageSource() {
         ReloadableResourceBundleMessageSource source = new ReloadableResourceBundleMessageSource();
         source.setBasename(messagesBasename);

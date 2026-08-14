@@ -1,82 +1,66 @@
 package com.paramount.pmx.security;
 
-import org.apache.commons.lang3.StringUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.paramount.pmx.config.SecurityConfig;
+import com.paramount.pmx.exception.BadCompanyException;
+import com.paramount.pmx.utils.HttpServletUtils;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.security.authentication.AccountExpiredException;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.CredentialsExpiredException;
-import org.springframework.security.authentication.DisabledException;
-import org.springframework.security.authentication.LockedException;
+import org.springframework.security.authentication.*;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.session.SessionAuthenticationException;
 
-import com.paramount.pmx.config.WebSecurityConfig;
-import com.paramount.pmx.utils.HttpServletUtils;
-
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-
-import lombok.extern.slf4j.Slf4j;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.util.Map;
 
 //로그인 실패 핸들러
 @Slf4j
 public class CustomAuthenticationFailureHandler implements AuthenticationFailureHandler {
-    @Autowired
-    protected AuthenticationManager authenticationManager;
 
     @Autowired
     private MessageSource messageSource;
 
-    //private RedirectStrategy redirectStrategy = null;
-
-    public CustomAuthenticationFailureHandler() {
-        //redirectStrategy = new DefaultRedirectStrategy();
-    }
+    private static final Map<Class<? extends AuthenticationException>, String> ERROR_MESSAGES = Map.ofEntries(
+            Map.entry(BadCompanyException.class, "error.login.BadCompany"),
+            Map.entry(BadCredentialsException.class, "error.login.BadCredentials"),
+            Map.entry(UsernameNotFoundException.class, "error.login.NotExist"),
+            Map.entry(DisabledException.class, "error.login.Disabled"),
+            Map.entry(LockedException.class, "error.login.Locked"),
+            Map.entry(AccountExpiredException.class, "error.login.AccountExpired"),
+            Map.entry(CredentialsExpiredException.class, "error.login.CredentialsExpired"),
+            Map.entry(SessionAuthenticationException.class, "error.security.SessionDoubleError")
+    );
 
     @Override
-    public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
-        String errormsg = null;
+    public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException ex)
+            throws IOException {
 
-        if(exception instanceof BadCredentialsException) {
-			errormsg = messageSource.getMessage("error.login.BadCredentials", null, "error", LocaleContextHolder.getLocale());
-		} else if(exception instanceof UsernameNotFoundException) {
-			errormsg = messageSource.getMessage("error.login.NotExist", null, "error", LocaleContextHolder.getLocale());
-		} else if(exception instanceof DisabledException) {
-			errormsg = messageSource.getMessage("error.login.Disabled", null, "error", LocaleContextHolder.getLocale());
-		} else if(exception instanceof LockedException) {
-			errormsg = messageSource.getMessage("error.login.Locked", null, "error", LocaleContextHolder.getLocale());
-		} else if(exception instanceof AccountExpiredException) {
-			errormsg = messageSource.getMessage("error.login.AccountExpired", null, "error", LocaleContextHolder.getLocale());
-		} else if(exception instanceof CredentialsExpiredException) {
-			errormsg = messageSource.getMessage("error.login.CredentialsExpired", null, "error", LocaleContextHolder.getLocale());
-		} else if (exception instanceof SessionAuthenticationException){
-            errormsg = messageSource.getMessage("error.security.SessionDoubleError", null, "error", LocaleContextHolder.getLocale());
-        }
-        log.info("[{}] {} 로그인 실패 - {}", HttpServletUtils.getClientIp(request), request.getParameter(WebSecurityConfig.USERNAME_PARAM), errormsg +" :: "+exception.toString());
+        String msgKey = ERROR_MESSAGES.getOrDefault(ex.getClass(), "error");
+        String errMsg = messageSource.getMessage(msgKey, null, "error", LocaleContextHolder.getLocale());
 
+        log.warn("[LOGIN FAIL] user={}, ip={}, reason={}",
+                request.getParameter(SecurityConfig.USERNAME_PARAM),
+                HttpServletUtils.getClientIp(request),
+                ex.getMessage());
 
-        //ajax login fail
-        response.setContentType("application/json");
-   	    response.setCharacterEncoding("utf-8");
-        response.setStatus(HttpServletResponse.SC_OK);
-        PrintWriter out = response.getWriter();
+        writeErrorResponse(response, errMsg);
+    }
 
-        String data = StringUtils.join(new String[] { " { \"success\" : false , ", " \"message\" : \""+errormsg+"\" ,", " \"code\" : \""+WebSecurityConfig.LOGIN_FAILURE_CODE+"\" } " });
-        out = response.getWriter();
-        out.print(data);
-        out.flush();
-        out.close();
+    private void writeErrorResponse(HttpServletResponse response, String message) throws IOException {
+        response.setContentType("application/json;charset=UTF-8");
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
-
+        Map<String, Object> body = Map.of(
+                "success", false,
+                "message", message,
+                "code", SecurityConfig.LOGIN_FAILURE_CODE
+        );
+        new ObjectMapper().writeValue(response.getWriter(), body);
     }
 }
