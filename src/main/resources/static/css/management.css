@@ -252,7 +252,7 @@ table.dataTable tbody > tr.selected td, table.dataTable tbody > tr > .selected t
 /*----------------------------------*/
 /* 분류관리(CMS)                     */
 /*----------------------------------*/
-.own-custom .second-depth { background: var(--second-depth-bg); }
+.own-custom .second-depth { background: transparent; }
 .own-custom .third-depth { background: var(--third-depth-bg); }
 .own-custom .fourth-depth { background: var(--fourth-depth-bg); }
 .own-custom .second-depth .data-txt.depth-shape::before { content: ''; margin-left: 1.5rem; margin-right: .3rem; background-color: #6c757d; display: inline-block; width: .15rem; height: .15rem; border-radius: 50%; margin-right: 0.5rem; vertical-align: middle; position: relative; top: -.1rem;}

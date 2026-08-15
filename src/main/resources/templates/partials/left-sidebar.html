@@ -122,8 +122,12 @@
                                 <a href="/manage/board"><i class="bi bi-arrow-right-short"></i> 게시판관리</a>
                             </li>
                             <li sec:authorize="hasAuthority('ADMIN')">
+                                <a href="/manage/categories"><i class="bi bi-arrow-right-short"></i> 강습분류관리</a>
+                            </li>
+                            <li sec:authorize="hasAuthority('ADMIN')">
                                 <a href="/manage/auth"><i class="bi bi-arrow-right-short"></i> 권한관리</a>
                             </li>
+
                         </ul>
                     </div>
                 </li>
