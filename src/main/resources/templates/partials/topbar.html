@@ -86,12 +86,12 @@
                 <li class="dropdown d-none d-sm-inline-block d-mobile-inline-block">
                     <a class="nav-link dropdown-toggle arrow-none nav-user px-2" data-bs-toggle="dropdown" id="profile" href="#" role="button" aria-haspopup="false" aria-expanded="false">
                         <span class="account-user-avatar">
-                            <img id="topbarProfileImage" th:src="${_user.profileImg}" alt="user-image" width="32" height="32" class="rounded-circle" style="object-fit: cover;">
+                            <img id="topbarProfileImage" th:src="${_user != null && _user.profileImg != null ? _user.profileImg : '/images/users/avatar-1.jpg'}" alt="user-image" width="32" height="32" class="rounded-circle" style="object-fit: cover;">
                         </span>
                         <span class="d-lg-flex flex-column gap-1 d-none">
-                            <h5 class="my-0" id="loginUserName" th:text="${_user.name}">이름</h5>
-                            <h6 class="my-0 fw-normal" th:text="${_user.roleName}">권한</h6>
-                            <input type="hidden" id="loginUserId" th:value="${_user.id}">
+                            <h5 class="my-0" id="loginUserName" th:text="${_user != null ? _user.name : ''}">이름</h5>
+                            <h6 class="my-0 fw-normal" th:text="${_user != null ? _user.roleName : ''}">권한</h6>
+                            <input type="hidden" id="loginUserId" th:value="${_user != null ? _user.id : ''}">
                         </span>
                     </a>
                     <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated profile-dropdown" id="profile-state" th:if="${_isAuthenticated} and ${_user != null}">

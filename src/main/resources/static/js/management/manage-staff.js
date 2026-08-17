@@ -10,6 +10,10 @@ const UserModalState = {
     userId: null,
 };
 
+const PageState = {
+    roleCodes: [],
+};
+
 let isSubmitting = false;
 
 function setSubmitting(on) {
@@ -33,7 +37,7 @@ function setSubmitting(on) {
  * DOMContentLoaded
  * ========================= */
 document.addEventListener("DOMContentLoaded", async () => {
-    // 검색용 직군
+    // 직책
     await loadRole("search-target", {placeholder: "전체", placeholderValue: "-"});
 
     // 사용자 목록 테이블 초기 로드
@@ -247,30 +251,6 @@ function reloadStaffTable(tableId) {
 }
 
 /* =========================
- * 바이라인 자동 생성 (부장/부국장: 부서명 포함)
- * - 부장/부국장 AND 부서가 virtual 아님 → "이름 부서명 직책"
- * - 그 외 → "이름 직책"
- * ========================= */
-const buildAutoByline = (name, positionText, departmentText, departmentVirtual) => {
-    const pos = (positionText && positionText !== "전체") ? positionText.trim() : "";
-    if (!name) return "";
-
-    // 직책 없으면 이름만
-    if (!pos) return name;
-
-    const isManager = (pos === "부장" || pos === "부국장");
-    const isDeptReal = departmentVirtual !== true; // true면 virtual, 그 외(null/false/undefined)는 실부서로 취급
-
-    // 부서명 정리: "(구)" 제거 + 트림
-    const dept = (departmentText || "").replace(/\(구\)/g, "").trim();
-
-    if (isManager && isDeptReal && dept) {
-        return `${name} ${dept} ${pos}`;
-    }
-    return `${name} ${pos}`;
-};
-
-/* =========================
  * RolePermissionController 연동
  * ========================= */
 function fillSelect(selectId, items, { placeholder = "전체", placeholderValue = "-" } = {}) {
@@ -296,16 +276,22 @@ function normalizeList(resp, key) {
     return data.map((x) => ({
         id: x.id ?? x.value ?? x.key,
         name: x.name ?? x.compName ?? x.title ?? String(x.id ?? ""),
+        code: x.code,
         type: x.type,
         active: x.active,
         virtual: x.virtual
     }));
 }
 
-async function loadRole(selectId) {
-    const resp = await fetchJson("/api/roles");
-    const items = normalizeList(resp, "roles");
-    fillSelect(selectId, items, { placeholder: "전체", placeholderValue: "-" });
+async function loadRoleCodes() {
+    if (PageState.roleCodes.length > 0) return;
+    const resp = await fetchJson("/api/code/user-roles");
+    PageState.roleCodes = normalizeList(resp);
+}
+
+async function loadRole(selectId, options = { placeholder: "전체", placeholderValue: "-" }) {
+    await loadRoleCodes();
+    fillSelect(selectId, PageState.roleCodes, options);
 }
 
 /* =========================
@@ -700,7 +686,7 @@ function getStaffTableColumns() {
         },
         {
             data: "roleName",
-            title: "roleName",
+            title: "직책",
             className: "data-txt",
             orderable: false,
             width: "7%",

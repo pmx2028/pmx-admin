@@ -30,7 +30,6 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
         if(accessDeniedException instanceof AccessDeniedException) {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             if(auth != null) {
-                CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
                 response.sendError(
                     HttpServletResponse.SC_FORBIDDEN,
                     messageSource.getMessage(
@@ -40,7 +39,11 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
                         LocaleContextHolder.getLocale()
                     )
                 );
-                log.info("[{}] {}({}) 해당 권한 없음 접근 - {}", HttpServletUtils.getClientIp(request), userDetails.getId(), request.getRequestURI());
+                Object principal = auth.getPrincipal();
+                String userId = principal instanceof CustomUserDetails userDetails
+                        ? String.valueOf(userDetails.getId())
+                        : String.valueOf(principal);
+                log.info("[{}] {} 해당 권한 없음 접근 - {}", HttpServletUtils.getClientIp(request), userId, request.getRequestURI());
             } else {
                 response.sendError(
                     HttpServletResponse.SC_UNAUTHORIZED,

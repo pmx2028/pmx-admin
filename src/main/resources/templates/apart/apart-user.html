@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<th:block
+        th:replace="~{layout/base-layout :: base-layout(
+            pageContent=~{::pageContent},
+            pageHead=~{::pageHead},
+            pageModal=~{::pageModal},
+            pageScript=~{::pageScript},
+            title='매니저/강사관리',
+            subtitle='관리'
+        )}">
+
+    <th:block th:fragment="pageHead">
+        <link href="/vendor/datatables.net-bs5/css/dataTables.bootstrap5.min.css" rel="stylesheet" type="text/css" />
+        <link href="/vendor/datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css" rel="stylesheet" />
+        <link href="/css/management.css" rel="stylesheet" type="text/css" />
+        <style>
+            .apart-user-layout {
+                display: grid;
+                grid-template-columns: minmax(360px, 5fr) minmax(520px, 7fr);
+                gap: 12px;
+            }
+
+            .apart-user-panel {
+                min-width: 0;
+            }
+
+            .apart-user-panel + .apart-user-panel {
+                margin-top: 12px;
+            }
+
+            .apart-user-toolbar {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 8px;
+                min-height: 38px;
+                margin-bottom: 8px;
+            }
+
+            .apart-user-toolbar .input-group {
+                max-width: 360px;
+            }
+
+            #apartDataTable tbody tr {
+                cursor: pointer;
+            }
+
+            #apartDataTable tbody tr.is-selected > * {
+                background-color: rgba(59, 130, 246, 0.14);
+            }
+
+            #staffDataTable tbody tr {
+                cursor: pointer;
+            }
+
+            #staffDataTable tbody tr.is-selected > * {
+                background-color: rgba(34, 197, 94, 0.14);
+            }
+
+            .apart-user-modal-grid {
+                display: grid;
+                grid-template-columns: minmax(420px, 1fr) minmax(360px, 0.8fr);
+                gap: 12px;
+                padding: 8px;
+            }
+
+            .apart-user-modal-panel {
+                min-width: 0;
+            }
+
+            .apart-user-message {
+                min-height: 20px;
+                font-size: 0.875rem;
+            }
+
+            @media (max-width: 1199.98px) {
+                .apart-user-layout {
+                    grid-template-columns: 1fr;
+                }
+
+                .apart-user-modal-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+        </style>
+    </th:block>
+
+    <th:block th:fragment="pageContent">
+        <th:block th:replace="~{partials/mobile-not-supported-notice :: mobile-not-supported-notice('apart-user-mobile-notice')}"></th:block>
+
+        <div class="row management-mobile-notice-target" id="apart-user-content">
+            <div class="col-12 mobile-p0">
+                <div class="card">
+                    <div class="card-body p-2">
+                        <div class="apart-user-layout">
+                            <section class="apart-user-panel">
+                                <div class="apart-user-toolbar">
+                                    <h5 class="mb-0">아파트 목록</h5>
+                                    <div class="input-group">
+                                        <input type="text" id="apart-search-text" class="form-control" placeholder="아파트 검색">
+                                        <button type="button" class="btn btn-primary border-primary" id="btn-apart-search">
+                                            <i class="ri-search-line me-1"></i> 검색
+                                        </button>
+                                        <button type="button" class="btn btn-soft-dark shadow-none ms-1" id="btn-apart-reset">
+                                            <i class="ri-loop-left-fill me-1"></i> 초기화
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="scrollable-container" data-simplebar data-simplebar-auto-hide="false">
+                                    <div class="table-inner-wrapper">
+                                        <table id="apartDataTable" class="table table-striped table-hover w-100 custom org-custom text-center"></table>
+                                    </div>
+                                </div>
+                                <div class="dt-footer" data-table="apartDataTable"></div>
+                            </section>
+
+                            <section class="apart-user-panel">
+                                <div class="apart-user-toolbar">
+                                    <h5 class="mb-0">매니저 목록</h5>
+                                    <button type="button" class="btn btn-primary border-primary" id="btn-manager-add">
+                                        <i class="ri-add-circle-line me-1"></i> 매니저등록
+                                    </button>
+                                </div>
+
+                                <div class="scrollable-container" data-simplebar data-simplebar-auto-hide="false">
+                                    <div class="table-inner-wrapper">
+                                        <table id="managerDataTable" class="table table-striped table-hover w-100 custom org-custom text-center"></table>
+                                    </div>
+                                </div>
+                                <div class="dt-footer" data-table="managerDataTable"></div>
+
+                                <div class="apart-user-panel">
+                                    <div class="apart-user-toolbar">
+                                        <h5 class="mb-0">강사 목록</h5>
+                                        <button type="button" class="btn btn-primary border-primary" id="btn-trainer-add">
+                                            <i class="ri-add-circle-line me-1"></i> 강사등록
+                                        </button>
+                                    </div>
+
+                                    <div class="scrollable-container" data-simplebar data-simplebar-auto-hide="false">
+                                        <div class="table-inner-wrapper">
+                                            <table id="trainerDataTable" class="table table-striped table-hover w-100 custom org-custom text-center"></table>
+                                        </div>
+                                    </div>
+                                    <div class="dt-footer" data-table="trainerDataTable"></div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </th:block>
+
+    <th:block th:fragment="pageModal">
+        <!-- 아파트 사용자 등록 모달 -->
+        <div class="modal fade" id="apart-usaer-modal" tabindex="-1" aria-labelledby="apart-usaer-modal" aria-hidden="true">
+            <div class="modal-dialog modal-xl" >
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">
+                            <i class="ri-user-add-line me-1"></i>
+                            <span id="apart-user-modal-title">매니저 등록</span>
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="apart-user-modal-grid">
+                        <section class="apart-user-modal-panel">
+                            <div class="apart-user-toolbar">
+                                <h5 class="mb-0" id="staff-list-title">매니저 목록</h5>
+                                <div class="input-group">
+                                    <input type="text" id="target-user-text" class="form-control" placeholder="이름 검색">
+                                    <button type="button" class="btn btn-primary border-primary" id="btn-user-search">
+                                        <i class="ri-search-line me-1"></i> 검색
+                                    </button>
+                                    <button type="button" class="btn btn-soft-dark shadow-none ms-1" id="btn-user-reset">
+                                        <i class="ri-loop-left-fill me-1"></i> 초기화
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="scrollable-container" data-simplebar data-simplebar-auto-hide="false">
+                                <div class="table-inner-wrapper">
+                                    <table id="staffDataTable" class="table table-striped table-hover w-100 custom org-custom text-center"></table>
+                                </div>
+                            </div>
+                            <div class="dt-footer" data-table="staffDataTable"></div>
+                        </section>
+
+                        <section class="apart-user-modal-panel">
+                            <h5 class="mb-2">입력 정보 등록</h5>
+                            <div class="row mb-2">
+                                <div class="col-4 my-1">선택 아파트</div>
+                                <div class="col-8">
+                                    <input type="text" class="form-control" id="selected-apart-name" readonly>
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-4 my-1">선택 사용자</div>
+                                <div class="col-8">
+                                    <input type="text" class="form-control" id="selected-user-name" readonly>
+                                    <div class="form-text" id="selected-user-summary">사용자를 선택해 주세요.</div>
+                                </div>
+                            </div>
+                            <div class="row mb-2 trainer-only-row">
+                                <div class="col-4 my-1">대분류</div>
+                                <div class="col-8">
+                                    <select class="form-select" id="categoryId" aria-label=""></select>
+                                </div>
+                            </div>
+                            <div class="row mb-2 trainer-only-row">
+                                <div class="col-4 my-1">세부강습명</div>
+                                <div class="col-8">
+                                    <select class="form-select" id="categoryId1" aria-label=""></select>
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-4 my-1">수수료</div>
+                                <div class="col-8">
+                                    <input type="number" class="form-control" id="commission" placeholder="수수료를 입력해 주세요">
+                                </div>
+                            </div>
+                            <div class="row mb-2 trainer-only-row">
+                                <div class="col-4 my-1">강습요금</div>
+                                <div class="col-8">
+                                    <input type="number" class="form-control" id="lessonPrice" placeholder="강습요금을 입력해 주세요">
+                                </div>
+                            </div>
+                            <div class="row mb-2 trainer-only-row lesson-option-row d-none">
+                                <div class="col-4 my-1">강습횟수</div>
+                                <div class="col-8">
+                                    <input type="number" class="form-control" id="lessonCnt" placeholder="강습횟수를 입력해 주세요">
+                                </div>
+                            </div>
+                            <div class="row mb-2 trainer-only-row lesson-option-row d-none">
+                                <div class="col-4 my-1">요일</div>
+                                <div class="col-8">
+                                    <div class="d-flex flex-wrap gap-2" id="weekdayCodes"></div>
+                                </div>
+                            </div>
+                            <div class="row mb-2 trainer-only-row lesson-option-row d-none">
+                                <div class="col-4 my-1">강습인원</div>
+                                <div class="col-8">
+                                    <input type="number" class="form-control" id="capacity" placeholder="강습인원을 입력해 주세요">
+                                </div>
+                            </div>
+                            <div class="row mb-2 trainer-only-row lesson-option-row d-none">
+                                <div class="col-4 my-1">강습최소 인원</div>
+                                <div class="col-8">
+                                    <input type="number" class="form-control" id="minCapacity" placeholder="강습최소 인원을 입력해 주세요">
+                                </div>
+                            </div>
+                            <div class="row mb-2 trainer-only-row">
+                                <div class="col-4 my-1">사용여부</div>
+                                <div class="col-8">
+                                    <select class="form-select" id="modalUsageSelect" aria-label="">
+                                        <option value="1" selected>사용</option>
+                                        <option value="0">미사용</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="apart-user-message text-danger" id="apart-user-message"></div>
+                        </section>
+                    </div>
+
+                    <div class="modal-footer p-2">
+                        <button type="button" class="btn btn-light me-1" data-bs-dismiss="modal">취소</button>
+                        <button type="button" id="confirmAddApartUser" class="btn btn-primary me-1 btn-save">
+                            <i class="ri-check-line me-1"></i>추가
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div><!--// 아파트사용자 등록 모달-->
+
+        <div class="modal fade" id="apart-user-modify-modal" tabindex="-1" aria-labelledby="apart-user-modify-modal" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">
+                            <i class="ri-edit-line me-1"></i>
+                            <span id="apart-user-modify-modal-title">등록 정보 수정</span>
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body px-2 pb-3">
+                        <div class="row mb-2">
+                            <div class="col-4 my-1">선택 아파트</div>
+                            <div class="col-8">
+                                <input type="text" class="form-control" id="modify-selected-apart-name" readonly>
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-4 my-1">선택 사용자</div>
+                            <div class="col-8">
+                                <input type="text" class="form-control" id="modify-selected-user-name" readonly>
+                                <div class="form-text" id="modify-selected-user-summary"></div>
+                            </div>
+                        </div>
+                        <div class="row mb-2 modify-trainer-only-row">
+                            <div class="col-4 my-1">대분류</div>
+                            <div class="col-8">
+                                <select class="form-select" id="modify-categoryId" aria-label=""></select>
+                            </div>
+                        </div>
+                        <div class="row mb-2 modify-trainer-only-row">
+                            <div class="col-4 my-1">세부강습명</div>
+                            <div class="col-8">
+                                <select class="form-select" id="modify-categoryId1" aria-label=""></select>
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-4 my-1">수수료</div>
+                            <div class="col-8">
+                                <input type="number" class="form-control" id="modify-commission" placeholder="수수료를 입력해 주세요">
+                            </div>
+                        </div>
+                        <div class="row mb-2 modify-trainer-only-row">
+                            <div class="col-4 my-1">강습요금</div>
+                            <div class="col-8">
+                                <input type="number" class="form-control" id="modify-lessonPrice" placeholder="강습요금을 입력해 주세요">
+                            </div>
+                        </div>
+                        <div class="row mb-2 modify-trainer-only-row modify-lesson-option-row d-none">
+                            <div class="col-4 my-1">강습횟수</div>
+                            <div class="col-8">
+                                <input type="number" class="form-control" id="modify-lessonCnt" placeholder="강습횟수를 입력해 주세요">
+                            </div>
+                        </div>
+                        <div class="row mb-2 modify-trainer-only-row modify-lesson-option-row d-none">
+                            <div class="col-4 my-1">요일</div>
+                            <div class="col-8">
+                                <div class="d-flex flex-wrap gap-2" id="modify-weekdayCodes"></div>
+                            </div>
+                        </div>
+                        <div class="row mb-2 modify-trainer-only-row modify-lesson-option-row d-none">
+                            <div class="col-4 my-1">강습인원</div>
+                            <div class="col-8">
+                                <input type="number" class="form-control" id="modify-capacity" placeholder="강습인원을 입력해 주세요">
+                            </div>
+                        </div>
+                        <div class="row mb-2 modify-trainer-only-row modify-lesson-option-row d-none">
+                            <div class="col-4 my-1">강습최소 인원</div>
+                            <div class="col-8">
+                                <input type="number" class="form-control" id="modify-minCapacity" placeholder="강습최소 인원을 입력해 주세요">
+                            </div>
+                        </div>
+                        <div class="row mb-2 modify-trainer-only-row">
+                            <div class="col-4 my-1">사용여부</div>
+                            <div class="col-8">
+                                <select class="form-select" id="modify-modalUsageSelect" aria-label="">
+                                    <option value="1" selected>사용</option>
+                                    <option value="0">미사용</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="apart-user-message text-danger" id="apart-user-modify-message"></div>
+                    </div>
+
+                    <div class="modal-footer p-2">
+                        <button type="button" class="btn btn-light me-1" data-bs-dismiss="modal">취소</button>
+                        <button type="button" id="confirmModifyApartUser" class="btn btn-primary me-1 btn-save">
+                            <i class="ri-check-line me-1"></i>저장
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </th:block>
+
+    <th:block th:fragment="pageScript">
+        <script type="module" src="/js/apart/apart-user.js"></script>
+    </th:block>
+
+</th:block>

@@ -121,7 +121,7 @@ public class SecurityConfig {
         http.securityMatcher("/**")                        // 전체 URL
                 .authorizeHttpRequests(auth -> auth
                         /* 공개 리소스 */
-                        .requestMatchers("/css/**", "/data/**", "/fonts/**",  "/images/**", "/js/**" , "/vendor/**" , "/storage/**", "/health").permitAll()
+                        .requestMatchers("/css/**", "/data/**", "/fonts/**",  "/images/**", "/js/**" , "/vendor/**" , "/storage/**", "/health", "/error", "/error/**").permitAll()
                         .requestMatchers(LOGIN_PAGE, LOGOUT_URL, LOGIN_SUCCESS_URL).permitAll()
                         .requestMatchers("/actuator/prometheus").permitAll()
 
@@ -129,7 +129,7 @@ public class SecurityConfig {
                         // 홈
                         .requestMatchers(
                                 "/index"
-                        ).hasAuthority(AuthorityCode.NOTICE_PAGE_VIEW.name())
+                        ).authenticated()
 //                        // 관리 - 기타 (
 //                        .requestMatchers(
 //                                "/manage/ombudsmen/**",    // 옴부즈만

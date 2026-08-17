@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // === 초기 로드 ===
     loadAllPermissions();
-    fetch("/api/roles")
+    fetch("/api/code/user-roles")
         .then((res) => res.json())
         .then((payload) => renderRoleList(payload.data || []))
         .catch(console.error);
@@ -96,7 +96,6 @@ document.addEventListener("DOMContentLoaded", () => {
                             data-role-id="${r.id}" data-role-name="${r.name}">
                       <div>
                         <strong>${r.name}</strong><br>
-                        <small>${r.description || "설명 없음"}</small>
                       </div>
                       <i class="ri-arrow-right-s-line"></i>
                     </button>`

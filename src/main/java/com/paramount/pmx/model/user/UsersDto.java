@@ -1,5 +1,6 @@
 package com.paramount.pmx.model.user;
 
+import com.paramount.pmx.model.enums.UserRole;
 import com.paramount.pmx.model.enums.UserStatus;
 import com.paramount.pmx.utils.S3UrlHelper;
 import lombok.AllArgsConstructor;
@@ -120,10 +121,7 @@ public class UsersDto {
         }
 
         // 회원 구분
-        String roleName = "-";
-        if (users.getRole() !=null) {
-            roleName = users.getRole().getName();
-        }
+        String roleName = UserRole.getDescription(users.getRoleId());
 
         return UsersDto.builder()
                 .id(users.getId())
@@ -146,10 +144,7 @@ public class UsersDto {
     // 권한관리 > 사용자별 권한 관리 사용자 목록 정보
     public static UsersDto toManageUserPermission(Users users){
         // 역활명
-        String roleName = "-";
-        if (users.getRole() !=null) {
-            roleName = users.getRole().getName();
-        }
+        String roleName = UserRole.getDescription(users.getRoleId());
 
         return UsersDto.builder()
                 .id(users.getId())
@@ -157,5 +152,6 @@ public class UsersDto {
                 .roleName(roleName)
                 .build();
     }
+
 
 }

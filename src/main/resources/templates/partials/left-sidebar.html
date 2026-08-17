@@ -21,41 +21,37 @@
                         <img src="/images/logo.png" alt="logo">
                     </span>
                 </a>
-
-                <!-- 홈 (데스크 페이지 접근 권한 보유 시 노출) -->
-                <li class="side-nav-item">
-                    <a data-bs-toggle="collapse" href="#sidebarNews" aria-expanded="false" aria-controls="sidebarNews" class="side-nav-link NavLink">
+                <li class="side-nav-item manage-side-nav-item"
+                    sec:authorize="hasAnyAuthority('ADMIN')">
+                    <a data-bs-toggle="collapse" href="#sidebarApart" aria-expanded="false" aria-controls="sidebarApart" class="side-nav-link NavLink">
                         <i class="ri-home-4-fill"></i>
-                        <span>홈</span>
+                        <span> 아파트 관리 </span>
                         <span class="menu-arrow"></span>
                     </a>
+                    <div class="collapse" id="sidebarApart">
+                        <ul class="side-nav-second-level">
+                            <li sec:authorize="hasAuthority('ADMIN')">
+                                <a href=/apart/apart><i class="bi bi-arrow-right-short"></i> 아파트관리</a>
+                            </li>
+                            <li sec:authorize="hasAuthority('ADMIN')">
+                                <a href="/apart/apart-user"><i class="bi bi-arrow-right-short"></i> 아파트매니저/강사</a>
+                            </li>
+                        </ul>
+                    </div>
                 </li>
-                <!-- 기사 작성 (ACTION 권한) -->
+                <!-- 강습관리 -->
                 <li class="side-nav-item" sec:authorize="hasAuthority('LESSON_PAGE_VIEW')">
-                    <a href="/article/write" class="side-nav-link">
+                    <a href="/apart/apart-user/trainer" class="side-nav-link">
+                        <i class="ri-pencil-fill"></i>
+                        <span> 강사관리 </span>
+                    </a>
+                </li>
+                <!-- 강습관리 -->
+                <li class="side-nav-item" sec:authorize="hasAuthority('LESSON_PAGE_VIEW')">
+                    <a href="/lesson/lesson" class="side-nav-link">
                         <i class="ri-pencil-fill"></i>
                         <span> 강습관리 </span>
                     </a>
-                </li>
-                <li class="side-nav-item" sec:authorize="hasAuthority('APART_PAGE_VIEW')">
-                    <a href="/apart/apart" class="side-nav-link">
-                        <i class="ri-pencil-fill"></i>
-                        <span> 아파트관리 </span>
-                    </a>
-                </li>
-                <!-- 매니저/강사관리 -->
-                <li class="side-nav-item" sec:authorize="hasAuthority('MANAGER_PAGE_VIEW')">
-                    <a data-bs-toggle="collapse" href="#sidebarArticles" aria-expanded="false" aria-controls="sidebarArticles" class="side-nav-link NavLink">
-                        <i class="ri-user-follow-line"></i>
-                        <span> 매니저/강사관리 </span>
-                        <span class="menu-arrow"></span>
-                    </a>
-                    <div class="collapse" id="sidebarArticles">
-                        <ul class="side-nav-second-level">
-                            <li><a href="/desk/article"><i class="bi bi-arrow-right-short"></i> 매니저관리</a></li>
-                            <li><a href="/desk/daily-reports"><i class="bi bi-arrow-right-short"></i> 강사관리</a></li>
-                        </ul>
-                    </div>
                 </li>
                 <li class="side-nav-item" sec:authorize="hasAuthority('MEMBER_PAGE_VIEW')">
                     <a href="/article/write" class="side-nav-link">
