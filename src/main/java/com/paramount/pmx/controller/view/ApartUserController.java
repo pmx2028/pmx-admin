@@ -12,7 +12,7 @@ public class ApartUserController {
         return "apart/apart-user";
     }
 
-
+    // 매니져 권한
     @GetMapping({"/apart/apart-user/trainer"})
     public String apartUsersTrainer(Model model) {
         return "apart/apart-user";
