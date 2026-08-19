@@ -46,6 +46,7 @@ public class LessonDto {
     private Boolean selected;
     private String createdAt;
     private String updatedAt;
+    private LessonConfirmedDto confirmed;
     private List<String> btnActions;
 
     public static LessonDto toDto(Lesson lesson) {

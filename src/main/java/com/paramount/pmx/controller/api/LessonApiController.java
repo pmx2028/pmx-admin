@@ -2,6 +2,7 @@ package com.paramount.pmx.controller.api;
 
 import com.paramount.pmx.model.apart.ApartDto;
 import com.paramount.pmx.model.apart.ApartUserDto;
+import com.paramount.pmx.model.lesson.LessonConfirmedDto;
 import com.paramount.pmx.model.lesson.LessonDto;
 import com.paramount.pmx.model.response.ResponseDto;
 import com.paramount.pmx.security.CustomUserDetails;
@@ -87,6 +88,34 @@ public class LessonApiController {
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         ResponseDto responseDto = lessonService.updateLesson(lessonId, reqDto, userDetails);
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
+    }
+
+    @GetMapping("/confirmed")
+    public ResponseEntity<ResponseDto> getLessonConfirmedDetail(
+            @RequestParam Map<String, Object> requestParams,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        ResponseDto responseDto = lessonService.getLessonConfirmedDetail( requestParams , userDetails);
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
+    }
+
+    @PostMapping("/confirmed")
+    public ResponseEntity<ResponseDto> createLessonConfirmed(
+            @RequestBody LessonConfirmedDto reqDto,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        ResponseDto responseDto = lessonService.createLessonConfirmed(reqDto, userDetails);
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
+    }
+
+    @PutMapping("/{lessonConfirmedId}/confirmed")
+    public ResponseEntity<ResponseDto> updateLessonConfirmed(
+            @PathVariable("lessonConfirmedId") Long lessonConfirmedId,
+            @RequestBody LessonConfirmedDto reqDto,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        ResponseDto responseDto = lessonService.updateLessonConfirmed(lessonConfirmedId, reqDto, userDetails);
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 

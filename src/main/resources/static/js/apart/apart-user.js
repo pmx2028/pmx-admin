@@ -331,12 +331,20 @@ function getCategoryCodeValue(codeName) {
     return categoryCode == null ? null : Number(categoryCode.id);
 }
 
-function shouldShowLessonOptions(categoryId) {
+function isCategoryRoot(categoryId, codeNames) {
     const rootId = toNumOrNull(getVal(categoryId));
-    return [
-        getCategoryCodeValue("GX"),
-        getCategoryCodeValue("TUNI"),
-    ].includes(rootId);
+    return codeNames
+        .map(getCategoryCodeValue)
+        .filter((value) => value != null)
+        .includes(rootId);
+}
+
+function shouldShowFullLessonOptions(categoryId) {
+    return isCategoryRoot(categoryId, ["GX", "TUNI"]);
+}
+
+function shouldShowLessonCount(categoryId) {
+    return isCategoryRoot(categoryId, ["GX", "TUNI", "HEALTH", "GOLF"]);
 }
 
 function toggleLessonOptionRows() {
@@ -345,14 +353,21 @@ function toggleLessonOptionRows() {
         return;
     }
 
-    const shouldShow = shouldShowLessonOptions("categoryId");
+    const showFullOptions = shouldShowFullLessonOptions("categoryId");
+    const showLessonCount = shouldShowLessonCount("categoryId");
 
     document.querySelectorAll(".lesson-option-row").forEach((row) => {
-        row.classList.toggle("d-none", !shouldShow);
+        row.classList.toggle("d-none", !showFullOptions);
     });
 
-    if (!shouldShow) {
-        ["lessonCnt", "capacity", "minCapacity"].forEach((id) => setVal(id, ""));
+    $id("lessonCnt")?.closest(".lesson-option-row")?.classList.toggle("d-none", !showLessonCount);
+
+    if (!showLessonCount) {
+        setVal("lessonCnt", "");
+    }
+
+    if (!showFullOptions) {
+        ["capacity", "minCapacity"].forEach((id) => setVal(id, ""));
         setMultiSelectValues("weekdayCodes", []);
     }
 }
@@ -363,14 +378,21 @@ function toggleModifyLessonOptionRows() {
         return;
     }
 
-    const shouldShow = shouldShowLessonOptions("modify-categoryId");
+    const showFullOptions = shouldShowFullLessonOptions("modify-categoryId");
+    const showLessonCount = shouldShowLessonCount("modify-categoryId");
 
     document.querySelectorAll(".modify-lesson-option-row").forEach((row) => {
-        row.classList.toggle("d-none", !shouldShow);
+        row.classList.toggle("d-none", !showFullOptions);
     });
 
-    if (!shouldShow) {
-        ["modify-lessonCnt", "modify-capacity", "modify-minCapacity"].forEach((id) => setVal(id, ""));
+    $id("modify-lessonCnt")?.closest(".modify-lesson-option-row")?.classList.toggle("d-none", !showLessonCount);
+
+    if (!showLessonCount) {
+        setVal("modify-lessonCnt", "");
+    }
+
+    if (!showFullOptions) {
+        ["modify-capacity", "modify-minCapacity"].forEach((id) => setVal(id, ""));
         setMultiSelectValues("modify-weekdayCodes", []);
     }
 }
@@ -427,6 +449,16 @@ function buildApartUserPayload() {
     if (!PageState.selectedUserId) throw new Error("등록할 사용자를 선택해 주세요.");
     if (!isManagerModal() && categoryId == null) throw new Error("대분류를 선택해 주세요.");
     if (!isManagerModal() && categoryId1 == null) throw new Error("세부강습명을 선택해 주세요.");
+    validateApartUserRequiredFields({
+        managerMode: isManagerModal(),
+        categorySelectId: "categoryId",
+        commission: toNumOrNull(getVal("commission")),
+        lessonPrice: toNumOrNull(getVal("lessonPrice")),
+        lessonCnt: toNumOrNull(getVal("lessonCnt")),
+        weekdayCodes: getSelectedWeekdayCodes("weekdayCodes"),
+        capacity: toNumOrNull(getVal("capacity")),
+        minCapacity: toNumOrNull(getVal("minCapacity")),
+    });
 
     return {
         apartId: Number(PageState.selectedApartId),
@@ -453,6 +485,16 @@ function buildModifyApartUserPayload() {
     if (!PageState.modifyUserId) throw new Error("사용자 정보를 찾을 수 없습니다.");
     if (!isModifyManagerModal() && categoryId == null) throw new Error("대분류를 선택해 주세요.");
     if (!isModifyManagerModal() && categoryId1 == null) throw new Error("세부강습명을 선택해 주세요.");
+    validateApartUserRequiredFields({
+        managerMode: isModifyManagerModal(),
+        categorySelectId: "modify-categoryId",
+        commission: toNumOrNull(getVal("modify-commission")),
+        lessonPrice: toNumOrNull(getVal("modify-lessonPrice")),
+        lessonCnt: toNumOrNull(getVal("modify-lessonCnt")),
+        weekdayCodes: getSelectedWeekdayCodes("modify-weekdayCodes"),
+        capacity: toNumOrNull(getVal("modify-capacity")),
+        minCapacity: toNumOrNull(getVal("modify-minCapacity")),
+    });
 
     return {
         apartId: Number(PageState.modifyApartId),
@@ -468,6 +510,38 @@ function buildModifyApartUserPayload() {
         minCapacity: isModifyManagerModal() ? null : toNumOrNull(getVal("modify-minCapacity")),
         activated: toNumOrNull(getVal("modify-modalUsageSelect")) ?? 1,
     };
+}
+
+function validateApartUserRequiredFields({ managerMode, categorySelectId, commission, lessonPrice, lessonCnt, weekdayCodes, capacity, minCapacity }) {
+    if (commission == null) {
+        throw new Error("수수료를 입력해 주세요.");
+    }
+
+    if (managerMode) {
+        return;
+    }
+
+    if (lessonPrice == null) {
+        throw new Error("강습요금을 입력해 주세요.");
+    }
+
+    if (shouldShowLessonCount(categorySelectId) && lessonCnt == null) {
+        throw new Error("강습횟수를 입력해 주세요.");
+    }
+
+    if (!shouldShowFullLessonOptions(categorySelectId)) {
+        return;
+    }
+
+    if (!weekdayCodes) {
+        throw new Error("요일을 선택해 주세요.");
+    }
+    if (capacity == null) {
+        throw new Error("강습인원을 입력해 주세요.");
+    }
+    if (minCapacity == null) {
+        throw new Error("강습최소 인원을 입력해 주세요.");
+    }
 }
 
 async function postCreateApartUser(payload) {
@@ -522,19 +596,19 @@ async function openModifyApartUserModal(apartUserId) {
     setVal("modify-selected-apart-name", data.apartName ?? "");
     setVal("modify-selected-user-name", formatUserLabel(data));
     setText("modify-selected-user-summary", [data.roleName, data.mobile, data.email].filter(Boolean).join(" / "));
+    setVal("modify-modalUsageSelect", data.activated ?? 1);
+
+    fillWeekdaySelect("modify-weekdayCodes");
+    toggleModifyRoleInputRows();
+    fillModifyRootCategorySelect();
+    setModifyCategory(data.categoryId, data.categoryId1);
+    toggleModifyLessonOptionRows();
     setVal("modify-commission", data.commission);
     setVal("modify-lessonPrice", data.lessonPrice);
     setVal("modify-lessonCnt", data.lessonCnt);
     setVal("modify-capacity", data.capacity);
     setVal("modify-minCapacity", data.minCapacity);
-    setVal("modify-modalUsageSelect", data.activated ?? 1);
-
-    fillWeekdaySelect("modify-weekdayCodes");
     setMultiSelectValues("modify-weekdayCodes", parseWeekdayCodes(data.weekdayCodes));
-    toggleModifyRoleInputRows();
-    fillModifyRootCategorySelect();
-    setModifyCategory(data.categoryId, data.categoryId1);
-    toggleModifyLessonOptionRows();
 
     bootstrap.Modal.getOrCreateInstance($id("apart-user-modify-modal")).show();
 }
@@ -873,6 +947,7 @@ function getApartUserTableColumns() {
         textColumn("mobile", "휴대폰", "15%"),
         textColumn("commission", "수수료", "10%"),
         textColumn("lessonPrice", "금액", "10%"),
+        textColumn("lessonCnt", "횟수", "8%"),
         textColumn("weekdayNames", "요일", "10%"),
         {
             data: "btnActions",

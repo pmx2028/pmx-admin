@@ -1,4 +1,4 @@
-// /js/management/manage-staff.js
+// /js/management/member.js
 import { loadDataTable } from "../common/datatable-handler.js";
 import { initCoverFileUpload } from "../management/management-utils.js";
 

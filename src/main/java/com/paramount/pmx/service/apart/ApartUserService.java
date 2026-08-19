@@ -3,6 +3,7 @@ package com.paramount.pmx.service.apart;
 import com.paramount.pmx.model.DatatableDto;
 import com.paramount.pmx.model.apart.ApartUser;
 import com.paramount.pmx.model.apart.ApartUserDto;
+import com.paramount.pmx.model.enums.CategoryCode;
 import com.paramount.pmx.model.response.Response;
 import com.paramount.pmx.model.response.ResponseDto;
 import com.paramount.pmx.repository.apart.ApartUserRepository;
@@ -57,6 +58,7 @@ public class ApartUserService {
     @Transactional
     public ResponseDto createApartUser(ApartUserDto reqDto, CustomUserDetails userDetails) {
         validateRequiredIds(reqDto);
+        validateRequiredValues(reqDto);
         validateDuplicate(reqDto.getApartId(), reqDto.getUserId(), reqDto.getCategoryId1(), reqDto.getRoleId(), null);
 
         ApartUser apartUser = ApartUser.builder()
@@ -81,6 +83,7 @@ public class ApartUserService {
     @Transactional
     public ResponseDto updateApartUser(Long apartUserId, ApartUserDto reqDto, CustomUserDetails userDetails) {
         validateRequiredIds(reqDto);
+        validateRequiredValues(reqDto);
         validateDuplicate(reqDto.getApartId(), reqDto.getUserId(), reqDto.getCategoryId1(), reqDto.getRoleId(), apartUserId);
 
         ApartUser apartUser = apartUserRepository.findById(apartUserId)
@@ -147,6 +150,38 @@ public class ApartUserService {
         validateRequiredIds(reqDto.getApartId(), reqDto.getUserId(), reqDto.getCategoryId1(), reqDto.getRoleId());
     }
 
+    private void validateRequiredValues(ApartUserDto reqDto) {
+        if (reqDto.getCommission() == null) {
+            throw new IllegalArgumentException("수수료를 입력해 주세요.");
+        }
+
+        if (isManagerRole(reqDto.getRoleId())) {
+            return;
+        }
+
+        if (reqDto.getCategoryId() == null) {
+            throw new IllegalArgumentException("대분류를 선택해 주세요.");
+        }
+        if (reqDto.getLessonPrice() == null) {
+            throw new IllegalArgumentException("강습요금을 입력해 주세요.");
+        }
+        if (isLessonCountCategory(reqDto.getCategoryId()) && reqDto.getLessonCnt() == null) {
+            throw new IllegalArgumentException("강습횟수를 입력해 주세요.");
+        }
+        if (!isFullLessonOptionCategory(reqDto.getCategoryId())) {
+            return;
+        }
+        if (reqDto.getWeekdayCodes() == null || reqDto.getWeekdayCodes().isBlank()) {
+            throw new IllegalArgumentException("요일을 선택해 주세요.");
+        }
+        if (reqDto.getCapacity() == null) {
+            throw new IllegalArgumentException("강습인원을 입력해 주세요.");
+        }
+        if (reqDto.getMinCapacity() == null) {
+            throw new IllegalArgumentException("강습최소 인원을 입력해 주세요.");
+        }
+    }
+
     private void validateRequiredIds(Long apartId, Long userId, Long categoryId1, Long roleId) {
         if (apartId == null) {
             throw new IllegalArgumentException("아파트 선택해 주세요.");
@@ -178,5 +213,17 @@ public class ApartUserService {
 
     private boolean isManagerRole(Long roleId) {
         return Long.valueOf(2L).equals(roleId);
+    }
+
+    private boolean isLessonCountCategory(Long categoryId) {
+        return CategoryCode.GX.getCode().equals(categoryId)
+                || CategoryCode.TUNI.getCode().equals(categoryId)
+                || CategoryCode.HEALTH.getCode().equals(categoryId)
+                || CategoryCode.GOLF.getCode().equals(categoryId);
+    }
+
+    private boolean isFullLessonOptionCategory(Long categoryId) {
+        return CategoryCode.GX.getCode().equals(categoryId)
+                || CategoryCode.TUNI.getCode().equals(categoryId);
     }
 }

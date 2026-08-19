@@ -5,10 +5,13 @@ import com.paramount.pmx.model.apart.ApartUser;
 import com.paramount.pmx.model.apart.ApartUserDto;
 import com.paramount.pmx.model.enums.TimeCode;
 import com.paramount.pmx.model.lesson.Lesson;
+import com.paramount.pmx.model.lesson.LessonConfirmed;
+import com.paramount.pmx.model.lesson.LessonConfirmedDto;
 import com.paramount.pmx.model.lesson.LessonDto;
 import com.paramount.pmx.model.response.Response;
 import com.paramount.pmx.model.response.ResponseDto;
 import com.paramount.pmx.repository.apart.ApartUserRepository;
+import com.paramount.pmx.repository.lesson.LessonConfirmedRepository;
 import com.paramount.pmx.repository.lesson.LessonRepository;
 import com.paramount.pmx.security.CustomUserDetails;
 import com.paramount.pmx.specs.apart.SearchApartUserSpec;
@@ -40,6 +43,7 @@ import static com.paramount.pmx.model.lesson.LessonDto.tohealthGolfList;
 public class LessonService {
 
     private final LessonRepository lessonRepository;
+    private final LessonConfirmedRepository lessonConfirmedRepository;
     private final ApartUserRepository apartUserRepository;
 
     //GX , 트리트니 리스트 조회
@@ -284,8 +288,9 @@ public class LessonService {
     public ResponseDto createLesson(LessonDto reqDto, CustomUserDetails userDetails) {
         //validateRequiredIds(reqDto);
         //validateDuplicate(reqDto.getApartId(), reqDto.getUserId(), reqDto.getCategoryId1(), reqDto.getRoleId(), null);
-
         Lesson lesson = Lesson.builder()
+                .year(reqDto.getYear())
+                .month(reqDto.getMonth())
                 .apartId(reqDto.getApartId())
                 .userId(reqDto.getUserId())
                 .categoryId(reqDto.getCategoryId())
@@ -296,6 +301,7 @@ public class LessonService {
                 .LessonPrice(reqDto.getLessonPrice())
                 .LessonCnt(reqDto.getLessonCnt())
                 .weekdayCode(reqDto.getWeekdayCode())
+                .timeCode(reqDto.getTimeCode())
                 .activated(reqDto.getActivated() == null ? 1 : reqDto.getActivated())
                 .build();
 
@@ -322,6 +328,9 @@ public class LessonService {
         lesson.setLessonPrice(reqDto.getLessonPrice());
         lesson.setLessonCnt(reqDto.getLessonCnt());
         lesson.setWeekdayCode(reqDto.getWeekdayCode());
+        lesson.setTimeCode(reqDto.getTimeCode());
+        lesson.setYear(reqDto.getYear());
+        lesson.setMonth(reqDto.getMonth());
         lesson.setActivated(reqDto.getActivated() == null ? lesson.getActivated() : reqDto.getActivated());
         lessonRepository.save(lesson);
 
@@ -334,13 +343,61 @@ public class LessonService {
 
         return Response.ok(LessonDto.toDetailDto(lesson));
     }
-
     @Transactional
     public ResponseDto resignApartUser(Long apartUserId, String resignDate, CustomUserDetails userDetails) {
         Lesson lesson = lessonRepository.findById(apartUserId)
                 .orElseThrow(() -> new NoSuchElementException("해당 강습을 찾을 수 없습니다."));
         lesson.setActivated(0);
         lessonRepository.save(lesson);
+        return Response.ok(true);
+    }
+
+    public ResponseDto getLessonConfirmedDetail(Map<String, Object> requestParams , CustomUserDetails userDetails) {
+        String year = parseString(getRequestValue(requestParams, "YEAR_IS", "year"));
+        String month = parseString(getRequestValue(requestParams, "MONTH_IS", "month"));
+        Long apartId = parseLong(getRequestValue(requestParams, "APART_ID_IS", "apartId"));
+
+        if (year == null || month == null || apartId == null) {
+            throw new IllegalArgumentException("연도, 월, 아파트 정보가 필요합니다.");
+        }
+
+        List<LessonConfirmed> lessonConfirmedList = lessonConfirmedRepository.findByYearAndMonthAndApartId(year, month, apartId);
+        if (lessonConfirmedList.isEmpty()) {
+            Map<String, Object> result = new HashMap<>();
+            result.put("id", null);
+            result.put("year", year);
+            result.put("month", month);
+            result.put("apartId", apartId);
+            result.put("confirmed", null);
+            return Response.ok(result);
+        }
+
+        return Response.ok(LessonConfirmedDto.toDto(lessonConfirmedList.get(0)));
+    }
+
+    @Transactional
+    public ResponseDto createLessonConfirmed(LessonConfirmedDto reqDto, CustomUserDetails userDetails) {
+
+        LessonConfirmed lessonConfirmed = LessonConfirmed.builder()
+                .year(reqDto.getYear())
+                .month(reqDto.getMonth())
+                .apartId(reqDto.getApartId())
+                .confirmed(reqDto.getConfirmed() == null ? 0 : reqDto.getConfirmed())
+                .activated(reqDto.getActivated() == null ? 1 : reqDto.getActivated())
+                .build();
+        lessonConfirmedRepository.save(lessonConfirmed);
+        return Response.ok(true);
+    }
+
+    @Transactional
+    public ResponseDto updateLessonConfirmed(Long lessonConfirmedId, LessonConfirmedDto reqDto, CustomUserDetails userDetails) {
+        LessonConfirmed lessonConfirmed = lessonConfirmedRepository.findById(lessonConfirmedId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 강습확정을 찾을 수 없습니다."));
+
+        lessonConfirmed.setConfirmed(reqDto.getConfirmed() == null ? lessonConfirmed.getConfirmed() : reqDto.getConfirmed());
+
+        lessonConfirmedRepository.save(lessonConfirmed);
+
         return Response.ok(true);
     }
 
@@ -420,64 +477,6 @@ public class LessonService {
     private String getHealthGolfLessonKey(LessonDto dto) {
         return dto.getUserId() + "_" + dto.getCategoryId() + "_" + dto.getCategoryId1();
     }
-
-//    public ResponseDto checkDuplicateApartUser(Long apartId, Long userId, Long categoryId1, Long excludeId, CustomUserDetails userDetails) {
-//        if (apartId == null) {
-//            throw new IllegalArgumentException("아파트 선택해 주세요.");
-//        }
-//        if (userId == null) {
-//            throw new IllegalArgumentException("사용자 선택해 주세요.");
-//        }
-//
-//        boolean duplicated;
-//        if (categoryId1 == null) {
-//            duplicated = excludeId == null
-//                    ? apartUserRepository.existsByApartIdAndUserId(apartId, userId)
-//                    : apartUserRepository.existsByApartIdAndUserIdAndIdNot(apartId, userId, excludeId);
-//        } else {
-//            duplicated = excludeId == null
-//                    ? apartUserRepository.existsByApartIdAndUserIdAndCategoryId1(apartId, userId, categoryId1)
-//                    : apartUserRepository.existsByApartIdAndUserIdAndCategoryId1AndIdNot(apartId, userId, categoryId1, excludeId);
-//        }
-//
-//        return Response.ok(Map.of("duplicated", duplicated));
-//    }
-
-
-
-//    private void validateRequiredIds(LessonDto reqDto) {
-//        if (reqDto == null) {
-//            throw new IllegalArgumentException("요청 정보가 없습니다.");
-//        }
-//        validateRequiredIds(reqDto.getApartId(), reqDto.getUserId(), reqDto.getCategoryId1(), reqDto.getRoleId());
-//    }
-//
-//    private void validateRequiredIds(Long apartId, Long userId, Long categoryId1, Long roleId) {
-//        if (apartId == null) {
-//            throw new IllegalArgumentException("아파트 선택해 주세요.");
-//        }
-//        if (userId == null) {
-//            throw new IllegalArgumentException("사용자 선택해 주세요.");
-//        }
-//        if (!isManagerRole(roleId) && categoryId1 == null) {
-//            throw new IllegalArgumentException("카테고리를 선택해 주세요.");
-//        }
-//    }
-
-//    private void validateDuplicate(Long apartId, Long userId, Long categoryId1, Long roleId, Long excludeId) {
-//        boolean duplicated;
-//        if (isManagerRole(roleId)) {
-//            duplicated = excludeId == null
-//                    ? lessonRepository.existsByYearAndMonthAndWeekdayCodeAndTimeCodeAndApartIdAndUserId(apartId, userId)
-//        } else {
-//            duplicated = excludeId == null
-//                    ? apartUserRepository.existsByYearAndMonthAndWeekdayCodeAndTimeCodeAndApartIdAndUserId(apartId, userId, categoryId1)
-//        }
-//
-//        if (duplicated) {
-//            throw new IllegalArgumentException("이미 등록된 아파트 사용자입니다.");
-//        }
-//    }
 
     private boolean isManagerRole(Long roleId) {
         return Long.valueOf(2L).equals(roleId);

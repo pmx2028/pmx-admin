@@ -8,6 +8,8 @@ const PageState = {
     gxTuniCategoryDetailsByParent: new Map(),
     gxTuniApartUsers: [],
     gxTuniApartUsersApartId: null,
+    lessonConfirmedStatus: null,
+    lessonConfirmedId: null,
 };
 
 const TAB_CONFIG = {
@@ -35,6 +37,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     bindSearchEvents();
     bindTabEvents();
     bindBulkSaveEvent();
+    bindConfirmedStatusEvent();
+    void reloadLessonConfirmedStatus();
     void reloadLessonTable(true);
 });
 
@@ -59,6 +63,7 @@ function initYearMonthSearch() {
 function bindSearchEvents() {
     const runSearch = async () => {
         await reloadApartSelect();
+        await reloadLessonConfirmedStatus();
         void reloadLessonTable(true);
     };
 
@@ -73,6 +78,7 @@ function bindSearchEvents() {
         PageState.gxTuniApartUsers = [];
         PageState.gxTuniApartUsersApartId = null;
         await reloadApartSelect();
+        await reloadLessonConfirmedStatus();
         void reloadLessonTable(true);
     });
 
@@ -82,12 +88,19 @@ function bindSearchEvents() {
         await runSearch();
     });
 
-    $id("search-year")?.addEventListener("change", () => void reloadLessonTable(true));
-    $id("search-month")?.addEventListener("change", () => void reloadLessonTable(true));
+    $id("search-year")?.addEventListener("change", () => {
+        void reloadLessonConfirmedStatus();
+        void reloadLessonTable(true);
+    });
+    $id("search-month")?.addEventListener("change", () => {
+        void reloadLessonConfirmedStatus();
+        void reloadLessonTable(true);
+    });
     $id("search-target-apart")?.addEventListener("change", () => {
         PageState.selectedApartId = toNumOrNull(getVal("search-target-apart"));
         PageState.gxTuniApartUsers = [];
         PageState.gxTuniApartUsersApartId = null;
+        void reloadLessonConfirmedStatus();
         void reloadLessonTable(true);
     });
 }
@@ -109,6 +122,10 @@ function bindTabEvents() {
 
 function bindBulkSaveEvent() {
     $id("btn-bulk-save")?.addEventListener("click", handleBulkSave);
+}
+
+function bindConfirmedStatusEvent() {
+    $id("btn-confirmed-status")?.addEventListener("click", handleConfirmedStatusClick);
 }
 
 async function ensureLessonTabResources() {
@@ -137,6 +154,11 @@ async function reloadLessonTable(resetPage = false) {
 
     $table.data("lesson-tab", PageState.activeTab);
 
+    const drawCallbacks = [applyLessonConfirmedLock];
+    if (PageState.activeTab === "gxtuni") {
+        drawCallbacks.unshift(bindGxTuniTableEvents);
+    }
+
     loadDataTable({
         tableId,
         ajaxUrl: config.ajaxUrl,
@@ -149,7 +171,7 @@ async function reloadLessonTable(resetPage = false) {
         enableCardView: true,
         enableResponsive: false,
         titleColumnName: "강습",
-        onDrawCallbackList: PageState.activeTab === "gxtuni" ? [bindGxTuniTableEvents] : [],
+        onDrawCallbackList: drawCallbacks,
         extraOptions: {
             dom: "rtip",
             pageLength: 200,
@@ -175,6 +197,11 @@ function getLessonSearchParams() {
 }
 
 async function handleBulkSave() {
+    if (isLessonConfirmed()) {
+        alert("확정된 강습은 수정할 수 없습니다.");
+        return;
+    }
+
     const table = $("#lessonDataTable").DataTable();
     const payload = PageState.activeTab === "gxtuni"
         ? collectGxTuniRows(table)
@@ -205,16 +232,145 @@ async function handleBulkSave() {
             : "/api/lessons/healthgolf/bulk";
         const res = await postJson(bulkUrl, payload);
         alert(`저장되었습니다. 등록 ${res?.data?.created ?? 0}건, 수정 ${res?.data?.updated ?? 0}건, 삭제 ${res?.data?.deleted ?? 0}건`);
+        void reloadLessonConfirmedStatus();
         void reloadLessonTable(false);
     } catch (err) {
         console.error(err);
         alert(err.message || "저장 중 오류가 발생했습니다.");
     } finally {
         if (btn) {
-            btn.disabled = false;
+            btn.disabled = isLessonConfirmed();
             btn.innerHTML = originalText;
         }
     }
+}
+
+async function handleConfirmedStatusClick() {
+    const btn = $id("btn-confirmed-status");
+    if (!btn || isLessonConfirmed()) return;
+
+    const payload = getLessonConfirmedPayload();
+    if (payload == null) {
+        alert("연도, 월, 아파트를 선택해 주세요.");
+        return;
+    }
+
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = "처리 중...";
+
+    try {
+        if (PageState.lessonConfirmedStatus == null) {
+            await postJson("/api/lessons/confirmed", { ...payload, confirmed: 0, activated: 1 });
+        } else if (Number(PageState.lessonConfirmedStatus) === 0) {
+            if (PageState.lessonConfirmedId == null) {
+                throw new Error("확정 대상 정보를 찾을 수 없습니다.");
+            }
+            await putJson(`/api/lessons/${PageState.lessonConfirmedId}/confirmed`, { ...payload, confirmed: 1, activated: 1 });
+        }
+
+        await reloadLessonConfirmedStatus();
+        void reloadLessonTable(false);
+    } catch (err) {
+        console.error(err);
+        alert(err.message || "확정 상태 처리 중 오류가 발생했습니다.");
+        btn.disabled = false;
+        btn.textContent = originalText;
+    }
+}
+
+async function reloadLessonConfirmedStatus() {
+    const btn = $id("btn-confirmed-status");
+    if (!btn) return;
+
+    const apartId = PageState.selectedApartId ?? toNumOrNull(getVal("search-target-apart"));
+    const year = getVal("search-year");
+    const month = getVal("search-month");
+
+    if (!apartId || !year || !month) {
+        PageState.lessonConfirmedStatus = null;
+        PageState.lessonConfirmedId = null;
+        btn.classList.add("d-none");
+        applyLessonConfirmedLock();
+        return;
+    }
+
+    btn.classList.remove("d-none", "btn-primary", "btn-warning", "btn-success", "btn-outline-secondary");
+    btn.classList.add("btn-outline-secondary");
+    btn.disabled = true;
+    btn.textContent = "확인 중...";
+
+    try {
+        const params = new URLSearchParams({
+            year,
+            month,
+            apartId: String(apartId),
+        });
+        const resp = await fetchJson(`/api/lessons/confirmed?${params.toString()}`);
+        const confirmed = resp?.data?.confirmed ?? null;
+        PageState.lessonConfirmedStatus = confirmed;
+        PageState.lessonConfirmedId = resp?.data?.id ?? null;
+
+        btn.classList.remove("btn-outline-secondary", "btn-primary", "btn-warning", "btn-success");
+        if (confirmed == null) {
+            btn.classList.add("btn-primary");
+            btn.disabled = false;
+            btn.textContent = "등록";
+            applyLessonConfirmedLock();
+            return;
+        }
+
+        if (Number(confirmed) === 0) {
+            btn.classList.add("btn-warning");
+            btn.disabled = false;
+            btn.textContent = "확정처리";
+            applyLessonConfirmedLock();
+            return;
+        }
+
+        btn.classList.add("btn-success");
+        btn.disabled = true;
+        btn.textContent = "확정됨";
+        applyLessonConfirmedLock();
+    } catch (err) {
+        console.error(err);
+        PageState.lessonConfirmedStatus = null;
+        PageState.lessonConfirmedId = null;
+        btn.classList.remove("btn-primary", "btn-warning", "btn-success");
+        btn.classList.add("btn-outline-secondary");
+        btn.disabled = true;
+        btn.textContent = "확인 실패";
+        applyLessonConfirmedLock();
+    }
+}
+
+function getLessonConfirmedPayload() {
+    const apartId = PageState.selectedApartId ?? toNumOrNull(getVal("search-target-apart"));
+    const year = getVal("search-year");
+    const month = getVal("search-month");
+
+    if (!apartId || !year || !month) {
+        return null;
+    }
+
+    return {
+        year,
+        month,
+        apartId,
+    };
+}
+
+function isLessonConfirmed() {
+    return Number(PageState.lessonConfirmedStatus) === 1;
+}
+
+function applyLessonConfirmedLock() {
+    const locked = isLessonConfirmed();
+    $id("btn-bulk-save")?.toggleAttribute("disabled", locked);
+
+    document.querySelectorAll("#lessonDataTable input, #lessonDataTable select, #lessonDataTable button").forEach((control) => {
+        control.disabled = locked;
+    });
 }
 
 function collectGxTuniRows(table) {
@@ -337,11 +493,11 @@ async function reloadApartSelect() {
         length: "200",
     });
 
-    const keyword = getVal("target-text");
+    //const keyword = getVal("target-text");
     const addressId = getVal("search-target-depth1");
     const addressId1 = getVal("search-target-depth2");
 
-    if (keyword) params.set("search_NAME_LIKE", keyword);
+    //if (keyword) params.set("search_NAME_LIKE", keyword);
     if (addressId && addressId !== "-") params.set("search_ADDRESS_ID_IS", addressId);
     if (addressId1 && addressId1 !== "-") params.set("search_ADDRESS1_ID_IS", addressId1);
 
@@ -846,9 +1002,17 @@ async function fetchJson(url) {
 }
 
 async function postJson(url, payload) {
+    return sendJson("POST", url, payload);
+}
+
+async function putJson(url, payload) {
+    return sendJson("PUT", url, payload);
+}
+
+async function sendJson(method, url, payload) {
     const csrf = getCsrf();
     const res = await fetch(url, {
-        method: "POST",
+        method,
         headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
