@@ -1,5 +1,6 @@
 package com.paramount.pmx.model.apart;
 
+import com.paramount.pmx.model.lesson.LessonConfirmed;
 import com.paramount.pmx.model.management.Address;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -88,6 +89,11 @@ public class Apart {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "address_id1", insertable = false, updatable = false)
     private Address address1;
+
+    // 조회용 연관관계 (읽기 전용)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id", insertable = false, updatable = false)
+    private LessonConfirmed lessonConfirmed;
 
     @PrePersist
     protected void onCreate() {

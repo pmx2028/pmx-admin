@@ -1,0 +1,403 @@
+<!--
+  페이지 생성시 해당 페이지 구조 복붙해서 사용하면됩니다.
+-->
+<!DOCTYPE html>
+<th:block th:replace="~{layout/base-layout :: base-layout(
+            pageContent=~{::pageContent},
+            pageHead=~{::pageHead},
+            pageModal=~{::pageModal},
+            pageScript=~{::pageScript},
+            title='주문/결제관리',
+            subtitle='관리'
+        )}">
+
+    <!-- head block -->
+    <th:block th:fragment="pageHead">
+        <!-- Daterangepicker css -->
+        <link href="/vendor/daterangepicker/daterangepicker.css" rel="stylesheet" type="text/css" />
+        <!-- Datatables css -->
+        <link href="/vendor/datatables.net-bs5/css/dataTables.bootstrap5.min.css" rel="stylesheet" type="text/css" />
+        <link href="/vendor/datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css" rel="stylesheet" type="text/css" />
+
+        <!-- custom css  -->
+        <link href="/css/management.css" rel="stylesheet" type="text/css" />
+        <link href="/css/gird24-system.css" rel="stylesheet" type="text/css" />
+    </th:block>
+
+    <!-- content block -->
+    <th:block th:fragment="pageContent">
+        <!-- row -->
+        <div class="row">
+
+            <!-- col-->
+            <div class="col-12 mobile-p0 m-0">
+                <!-- card -->
+                <div class="card">
+                    <!-- card body-->
+                    <div class="card-body p-2">
+                        <form>
+                            <!-- top -->
+                            <div class="manage-data manage-bottom">
+                                <div class="grid-24">
+                                    <div class="row">
+                                        <!-- 버튼 -->
+                                        <div class="col-24 col-sm-5 col-lg-4 col-xl-3">
+                                            <button type="button" class="btn btn-primary management-btn mb-2" data-bs-toggle="modal" data-bs-target="#order-modal">
+                                                <i class="ri-add-circle-line me-1"></i> 주문 등록
+                                            </button>
+                                        </div><!--//버튼 -->
+
+                                        <!-- 검색영역 -->
+                                        <div class="col-sm-19 col-lg-20 col-xl-21">
+                                            <div class="grid-24">
+                                                <div class="row justify-content-end">
+                                                    <!-- 지역영역 -->
+                                                    <div class="col-sm-7 col-md-6 col-lg-4 col-xl-3 mb-2 selectbox-pe-0">
+                                                        <div class="input-group d-flex align-items-center">
+                                                            <h5 class="mb-0 me-2">지역</h5>
+                                                            <select class="form-select" id="search-target-depth1" aria-label="">
+                                                            </select>
+                                                        </div>
+                                                    </div><!--// 지역영역 -->
+                                                    <!-- 시군영역 -->
+                                                    <div class="col-sm-7 col-md-6 col-lg-4 col-xl-3 mb-2 selectbox-pe-0">
+                                                        <div class="input-group d-flex align-items-center">
+                                                            <h5 class="mb-0 me-2">시군구</h5>
+                                                            <select class="form-select" id="search-target-depth2" aria-label="">
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-7 col-md-6 col-lg-4 col-xl-4 mb-2 selectbox-pe-0">
+                                                        <div class="input-group d-flex align-items-center">
+                                                            <h5 class="mb-0 me-2">아파트</h5>
+                                                            <select class="form-select" id="search-target-apart" aria-label="">
+                                                            </select>
+                                                        </div>
+                                                    </div><!--// 시군영역 -->
+                                                    <!-- 상태영역 -->
+                                                    <div class="col-sm-7 col-md-6 col-lg-4 col-xl-3 mb-2 selectbox-pe-0">
+                                                        <div class="input-group d-flex align-items-center">
+                                                            <h5 class="mb-0 me-2">상태</h5>
+                                                            <select class="form-select" id="search-status" aria-label="">
+                                                                <option value="-">전체</option>
+                                                                <option value="READY">준비</option>
+                                                                <option value="PAYMENT_PENDING">결제대기</option>
+                                                                <option value="PAID">결제완료</option>
+                                                                <option value="CANCELLED">취소</option>
+                                                                <option value="REFUNDED">환불</option>
+                                                            </select>
+                                                        </div>
+                                                    </div><!--// 상태영역 -->
+                                                    <!-- 검색 -->
+                                                    <div class="col-sm-17 col-md-17 col-lg-14 col-xl-8 col-xxxl-7 mb-2">
+                                                        <div class="input-group">
+                                                            <input type="text" id="target-text" class="form-control w-33"
+                                                                   placeholder="주문번호 검색">
+                                                            <button type="button" class="btn btn-primary border-primary" id="btn-search">
+                                                                <i class="ri-search-line me-1"></i> 검색
+                                                            </button>
+                                                            <button type="button" class="btn btn-soft-dark shadow-none ms-1" id="btn-reset">
+                                                                <i class="ri-loop-left-fill me-1"></i> <span>초기화</span>
+                                                            </button>
+                                                        </div>
+                                                    </div><!--// 검색 -->
+                                                </div><!--//row -->
+                                            </div>
+                                        </div><!--// 검색영역 -->
+
+                                    </div><!--//row -->
+                                </div>
+                            </div><!--//top -->
+
+                            <!-- table #dataTable - DataTable 로드 -->
+                            <div class="scrollable-container" data-simplebar data-simplebar-auto-hide="false">
+                                <div class="table-inner-wrapper">
+                                    <table id="orderDataTable" class="table table-striped table-hover w-100 custom org-custom text-center">
+                                    </table>
+                                </div>
+                            </div><!--//table -->
+                            <!-- 푸터 페이지네이션 -->
+                            <div class="dt-footer" data-table="orderDataTable"></div>
+                        </form>
+                    </div><!--// card body-->
+                </div> <!--// card -->
+            </div><!--//col-->
+
+        </div><!--//row -->
+    </th:block>
+
+    <!-- modal block -->
+    <th:block th:fragment="pageModal">
+
+        <!-- 주문 등록/수정 모달 -->
+        <div class="modal fade" id="order-modal" tabindex="-1" aria-labelledby="order-modal" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header justify-content-end bg-primary text-white">
+                        <h5 class="modal-title">
+                            <i class="ri-file-list-3-fill me-1"></i>
+                            <span id="order-modal-title">주문 등록</span>
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="p-1">
+                        <div class="modal-body px-2 pb-3">
+                            <div class="row mb-2">
+                                <div class="col-3">주문번호</div>
+                                <div class="col-9">
+                                    <input type="text" class="form-control" id="order-orderNo" placeholder="자동 생성됩니다" readonly>
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-3">회원ID</div>
+                                <div class="col-9">
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="order-memberId" placeholder="회원 ID를 입력해 주세요">
+                                        <button type="button" class="btn btn-outline-secondary" id="order-member-check">확인</button>
+                                    </div>
+                                    <div class="form-text" id="order-member-info"></div>
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-3">아파트</div>
+                                <div class="col-9">
+                                    <select class="form-select" id="order-apartId" aria-label="">
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-3">강습ID(선택)</div>
+                                <div class="col-9">
+                                    <input type="number" class="form-control" id="order-lessonId" placeholder="연결할 강습 ID (선택)">
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-3">주문명</div>
+                                <div class="col-9">
+                                    <input type="text" class="form-control" id="order-orderName" placeholder="주문명을 입력해 주세요">
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-3">주문금액</div>
+                                <div class="col-9">
+                                    <input type="number" class="form-control" id="order-orderAmount" placeholder="주문금액을 입력해 주세요" min="0">
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-3">할인금액</div>
+                                <div class="col-9">
+                                    <input type="number" class="form-control" id="order-discountAmount" placeholder="0" min="0" value="0">
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-3">결제금액</div>
+                                <div class="col-9">
+                                    <input type="text" class="form-control" id="order-paymentAmount" readonly>
+                                </div>
+                            </div>
+                            <div class="row mb-2" id="order-status-row">
+                                <div class="col-3">주문상태</div>
+                                <div class="col-9">
+                                    <select class="form-select" id="order-orderStatus" aria-label="">
+                                        <option value="READY">준비</option>
+                                        <option value="PAYMENT_PENDING">결제대기</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-text" id="order-form-message"></div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer p-2">
+                        <button type="button" class="btn btn-light me-1" data-bs-dismiss="modal">취소</button>
+                        <button type="button" class="btn btn-primary" id="order-confirm">등록</button>
+                    </div>
+                </div>
+            </div>
+        </div><!--// 주문 등록/수정 모달 -->
+
+        <!-- 주문 취소 확인 모달 -->
+        <div class="modal fade" id="order-cancel-modal" tabindex="-1" aria-labelledby="order-cancel-modal" aria-hidden="true">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                    <div class="modal-header justify-content-end bg-danger text-white">
+                        <h5 class="modal-title">
+                            <i class="ri-close-circle-fill me-1"></i>
+                            주문 취소
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        해당 주문을 취소 처리하시겠습니까?
+                    </div>
+                    <div class="modal-footer p-2">
+                        <button type="button" class="btn btn-light me-1" data-bs-dismiss="modal">취소</button>
+                        <button type="button" class="btn btn-danger" id="order-cancel-confirm">주문취소</button>
+                    </div>
+                </div>
+            </div>
+        </div><!--// 주문 취소 확인 모달 -->
+
+        <!-- 결제내역 관리 모달 -->
+        <div class="modal fade" id="payment-modal" tabindex="-1" aria-labelledby="payment-modal" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header justify-content-end bg-primary text-white">
+                        <h5 class="modal-title">
+                            <i class="ri-bank-card-fill me-1"></i>
+                            결제내역 관리
+                            <small class="d-block fw-normal" id="payment-modal-order-info"></small>
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body px-2 pb-3">
+                        <div class="d-flex justify-content-end mb-2">
+                            <button type="button" class="btn btn-sm btn-primary" id="btn-payment-create-toggle">
+                                <i class="ri-add-line me-1"></i> 결제 등록
+                            </button>
+                        </div>
+
+                        <!-- 결제 등록 폼 -->
+                        <div class="border rounded p-2 mb-3 d-none" id="payment-create-panel">
+                            <div class="row g-2 align-items-end">
+                                <div class="col-4">
+                                    <label class="form-label mb-1">PG사</label>
+                                    <select class="form-select form-select-sm" id="payment-create-pgCompany">
+                                        <option value="HECTO">HECTO</option>
+                                        <option value="TOSSPAYMENTS">TOSSPAYMENTS</option>
+                                        <option value="KCP">KCP</option>
+                                        <option value="INICIS">INICIS</option>
+                                    </select>
+                                </div>
+                                <div class="col-4">
+                                    <label class="form-label mb-1">결제수단</label>
+                                    <select class="form-select form-select-sm" id="payment-create-method">
+                                        <option value="CARD">카드</option>
+                                        <option value="BANK">계좌이체</option>
+                                        <option value="VBANK">가상계좌</option>
+                                        <option value="MOBILE">휴대폰</option>
+                                    </select>
+                                </div>
+                                <div class="col-4">
+                                    <label class="form-label mb-1">결제금액</label>
+                                    <input type="number" class="form-control form-control-sm" id="payment-create-amount" min="0">
+                                </div>
+                                <div class="col-12 text-end mt-2">
+                                    <button type="button" class="btn btn-sm btn-light me-1" id="btn-payment-create-cancel">취소</button>
+                                    <button type="button" class="btn btn-sm btn-primary" id="btn-payment-create-submit">등록</button>
+                                </div>
+                            </div>
+                        </div><!--// 결제 등록 폼 -->
+
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered text-center align-middle" id="payment-list-table">
+                                <thead class="table-light">
+                                <tr>
+                                    <th>PG사</th>
+                                    <th>결제수단</th>
+                                    <th>금액</th>
+                                    <th>상태</th>
+                                    <th>PG거래번호</th>
+                                    <th>승인일시</th>
+                                    <th>결과</th>
+                                    <th style="min-width:190px;">작업</th>
+                                </tr>
+                                </thead>
+                                <tbody id="payment-list-body">
+                                <tr>
+                                    <td colspan="8">결제내역이 없습니다.</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- 승인 처리 패널 -->
+                        <div class="border rounded p-2 mb-2 d-none" id="payment-approve-panel">
+                            <h6 class="mb-2"><i class="ri-check-double-line me-1"></i> 결제 승인 처리</h6>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <label class="form-label mb-1">PG 거래번호</label>
+                                    <input type="text" class="form-control form-control-sm" id="payment-approve-transactionId">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label mb-1">결과코드</label>
+                                    <input type="text" class="form-control form-control-sm" id="payment-approve-resultCode">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label mb-1">결과메시지</label>
+                                    <input type="text" class="form-control form-control-sm" id="payment-approve-resultMessage">
+                                </div>
+                                <div class="col-12 text-end mt-1">
+                                    <button type="button" class="btn btn-sm btn-light me-1" id="btn-payment-approve-cancel">취소</button>
+                                    <button type="button" class="btn btn-sm btn-primary" id="btn-payment-approve-submit">승인처리</button>
+                                </div>
+                            </div>
+                        </div><!--// 승인 처리 패널 -->
+
+                        <!-- 실패 처리 패널 -->
+                        <div class="border rounded p-2 mb-2 d-none" id="payment-fail-panel">
+                            <h6 class="mb-2"><i class="ri-close-circle-line me-1"></i> 결제 실패 처리</h6>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <label class="form-label mb-1">결과코드</label>
+                                    <input type="text" class="form-control form-control-sm" id="payment-fail-resultCode">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label mb-1">결과메시지</label>
+                                    <input type="text" class="form-control form-control-sm" id="payment-fail-resultMessage">
+                                </div>
+                                <div class="col-12 text-end mt-1">
+                                    <button type="button" class="btn btn-sm btn-light me-1" id="btn-payment-fail-cancel">취소</button>
+                                    <button type="button" class="btn btn-sm btn-danger" id="btn-payment-fail-submit">실패처리</button>
+                                </div>
+                            </div>
+                        </div><!--// 실패 처리 패널 -->
+
+                    </div>
+
+                    <div class="modal-footer p-2">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">닫기</button>
+                    </div>
+                </div>
+            </div>
+        </div><!--// 결제내역 관리 모달 -->
+
+        <!-- 결제 취소 확인 모달 -->
+        <div class="modal fade" id="payment-cancel-modal" tabindex="-1" aria-labelledby="payment-cancel-modal" aria-hidden="true">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                    <div class="modal-header justify-content-end bg-danger text-white">
+                        <h5 class="modal-title">
+                            <i class="ri-close-circle-fill me-1"></i>
+                            결제 취소
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        해당 결제를 취소 처리하시겠습니까?
+                    </div>
+                    <div class="modal-footer p-2">
+                        <button type="button" class="btn btn-light me-1" data-bs-dismiss="modal">취소</button>
+                        <button type="button" class="btn btn-danger" id="payment-cancel-confirm">결제취소</button>
+                    </div>
+                </div>
+            </div>
+        </div><!--// 결제 취소 확인 모달 -->
+
+    </th:block>
+
+    <!-- script block -->
+    <th:block th:fragment="pageScript">
+
+        <!-- Daterangepicker Plugin js -->
+        <script src="/vendor/daterangepicker/moment.min.js"></script>
+        <script src="/vendor/daterangepicker/daterangepicker.js"></script>
+
+        <!-- custom -->
+        <script type="module" src="/js/order/order.js"></script>
+
+    </th:block>
+
+</th:block>

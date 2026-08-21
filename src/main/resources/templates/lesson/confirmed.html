@@ -7,7 +7,7 @@
             pageHead=~{::pageHead},
             pageModal=~{::pageModal},
             pageScript=~{::pageScript},
-            title='월별강습관리',
+            title='아파트강습현황',
             subtitle='관리'
         )}">
 
@@ -30,6 +30,7 @@
         <!-- 여기에 페이지 본문 내용을 넣습니다. -->
         <!-- row -->
         <div class="row">
+
             <!-- col-->
             <div class="col-12 mobile-p0 m-0">
                 <!-- card -->
@@ -42,15 +43,9 @@
                                 <div class="grid-24">
                                     <div class="row">
                                         <!-- 검색영역 -->
-                                        <div class="col-24">
+                                        <div class="col-sm-19 col-lg-20 col-xl-21">
                                             <div class="grid-24">
                                                 <div class="row justify-content-end">
-                                                    <div class="col-sm-5 col-md-4 col-lg-3 col-xl-2 mb-2 selectbox-pe-0 me-auto text-start">
-                                                        <button type="button" class="btn btn-primary d-none" id="btn-confirmed-status">
-                                                            등록
-                                                        </button>
-                                                    </div>
-
                                                     <div class="col-sm-5 col-md-4 col-lg-3 col-xl-2 mb-2 selectbox-pe-0">
                                                         <div class="input-group d-flex align-items-center">
                                                             <h5 class="mb-0 me-2">연도</h5>
@@ -64,7 +59,18 @@
                                                             </select>
                                                         </div>
                                                     </div>
-                                                    <!-- 지역영역 -->
+                                                    <div class="col-sm-7 col-md-6 col-lg-4 col-xl-3 mb-2 selectbox-pe-0">
+                                                        <div class="input-group d-flex align-items-center">
+                                                            <h5 class="mb-0 me-2">확정여부</h5>
+                                                            <select class="form-select" id="search-target-confirmed" aria-label="확정상태">
+                                                                <option value="-">전체</option>
+                                                                <option value="">미등록</option>
+                                                                <option value="0">등록</option>
+                                                                <option value="1">확정</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <!--// 지역영역 ---->
                                                     <div class="col-sm-7 col-md-6 col-lg-4 col-xl-3 mb-2 selectbox-pe-0">
                                                         <div class="input-group d-flex align-items-center">
                                                             <h5 class="mb-0 me-2">지역</h5>
@@ -88,7 +94,7 @@
                                                         </div>
                                                     </div><!--// 시군영역 -->
                                                     <!-- 검색 -->
-                                                    <div class="col-sm-17 col-md-17 col-lg-14 col-xl-7 mb-2">
+                                                    <div class="col-sm-17 col-md-17 col-lg-14 col-xl-8 col-xxxl-8 mb-2">
                                                         <div class="input-group">
                                                             <input type="text" id="target-text" class="form-control w-33"
                                                                    placeholder="아파트 검색">
@@ -103,39 +109,20 @@
                                                 </div><!--//row -->
                                             </div>
                                         </div><!--// 검색영역 -->
+
                                     </div><!--//row -->
                                 </div>
                             </div><!--//top -->
 
-                            <ul class="nav nav-tabs mb-2" id="lesson-tabs" role="tablist">
-                                <li class="nav-item" role="presentation">
-                                    <button type="button" class="nav-link active" data-lesson-tab="gxtuni">
-                                        GX/트니트니
-                                    </button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button type="button" class="nav-link" data-lesson-tab="health">
-                                        헬스
-                                    </button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button type="button" class="nav-link" data-lesson-tab="golf">
-                                        골프
-                                    </button>
-                                </li>
-                            </ul>
-                            <div class="d-flex justify-content-end mb-2">
-                                <button type="button" class="btn btn-primary" id="btn-bulk-save">
-                                    <i class="ri-save-line me-1"></i> 일괄 저장
-                                </button>
-                            </div>
                             <!-- table #dataTable - DataTable 로드 -->
                             <div class="scrollable-container" data-simplebar data-simplebar-auto-hide="false">
                                 <div class="table-inner-wrapper">
-                                    <table id="lessonDataTable" class="table table-striped table-hover w-100 custom org-custom text-center">
+                                    <table id="apartConfirmedDataTable" class="table table-striped table-hover w-100 custom org-custom text-center">
                                     </table>
                                 </div>
                             </div><!--//table -->
+                            <!-- 푸터 페이지네이션 -->
+                            <div class="dt-footer" data-table="apartConfirmedDataTable"></div>
                         </form>
                     </div><!--// card body-->
                 </div> <!--// card -->
@@ -148,53 +135,6 @@
     <!-- modal block -->
     <th:block th:fragment="pageModal">
 
-        <!-- 주문정보 확인 모달 -->
-        <div class="modal fade" id="order-confirm-modal" tabindex="-1" aria-labelledby="order-confirm-modal" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header justify-content-end bg-primary text-white">
-                        <h5 class="modal-title">
-                            <i class="ri-file-list-3-fill me-1"></i>
-                            주문정보 확인
-                        </h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-
-                    <div class="modal-body px-2 pb-3">
-                        <div class="row mb-2">
-                            <div class="col-4 text-muted">주문번호</div>
-                            <div class="col-8" id="order-confirm-no">-</div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col-4 text-muted">주문명</div>
-                            <div class="col-8" id="order-confirm-name">-</div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col-4 text-muted">주문금액</div>
-                            <div class="col-8" id="order-confirm-amount">-</div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col-4 text-muted">할인금액</div>
-                            <div class="col-8" id="order-confirm-discount">-</div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col-4 text-muted">최종 결제금액</div>
-                            <div class="col-8 fw-bold text-primary fs-5" id="order-confirm-payment-amount">-</div>
-                        </div>
-                    </div>
-
-                    <div class="modal-footer p-2">
-                        <button type="button" class="btn btn-light me-1" data-bs-dismiss="modal">취소</button>
-                        <button type="button" class="btn btn-primary" id="btn-order-confirm-card">
-                            <i class="ri-bank-card-line me-1"></i> 카드결제
-                        </button>
-                        <button type="button" class="btn btn-success" id="btn-order-confirm-vbank">
-                            <i class="ri-bank-line me-1"></i> 가상계좌결제
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div><!--// 주문정보 확인 모달 -->
 
     </th:block>
 
@@ -204,8 +144,9 @@
         <!-- Daterangepicker Plugin js / 날짜 범위 선택 -->
         <script src="/vendor/daterangepicker/moment.min.js"></script>
         <script src="/vendor/daterangepicker/daterangepicker.js"></script>
+
         <!-- custom -->
-        <script type="module" src="/js/lesson/lesson.js"></script>
+        <script type="module" src="/js/lesson/confirmed.js"></script>
 
     </th:block>
 

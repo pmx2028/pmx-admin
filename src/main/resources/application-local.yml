@@ -168,3 +168,14 @@ paramount:
     rememberme-key: ${REMEMBER_ME_KEY}
     rememberme-table: persistent_logins_pmx
     rememberme-validity-days: 7
+
+
+hecto:
+  mid: ${HECTO_MID}
+  encryption-key: ${HECTO_ENCRYPTION_KEY}
+  hash-key: ${HECTO_HASH_KEY}
+  hecto-url: ${HECTO_URL}
+
+app:
+  # 헥토 notiUrl/nextUrl/cancUrl 절대경로 생성에 사용. 배포 환경별로 실제 도메인으로 재정의할 것.
+  base-url: ${APP_BASE_URL:http://localhost:7022}

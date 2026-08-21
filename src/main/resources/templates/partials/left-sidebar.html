@@ -47,11 +47,23 @@
                     </a>
                 </li>
                 <!-- 강습관리 -->
-                <li class="side-nav-item" sec:authorize="hasAuthority('LESSON_PAGE_VIEW')">
-                    <a href="/lesson/lesson" class="side-nav-link">
-                        <i class="ri-pencil-fill"></i>
-                        <span> 강습관리 </span>
+                <li class="side-nav-item manage-side-nav-item"
+                    sec:authorize="hasAnyAuthority('ADMIN')">
+                    <a data-bs-toggle="collapse" href="#sidebarConfirmed" aria-expanded="false" aria-controls="sidebarConfirmed" class="side-nav-link NavLink">
+                        <i class="ri-home-4-fill"></i>
+                        <span> 강습 관리 </span>
+                        <span class="menu-arrow"></span>
                     </a>
+                    <div class="collapse" id="sidebarConfirmed">
+                        <ul class="side-nav-second-level">
+                            <li sec:authorize="hasAuthority('ADMIN')">
+                                <a href=/lesson/lesson><i class="bi bi-arrow-right-short"></i> 강습관리</a>
+                            </li>
+                            <li sec:authorize="hasAuthority('ADMIN')">
+                                <a href="/lesson/confirmed"><i class="bi bi-arrow-right-short"></i> 강습현황조회</a>
+                            </li>
+                        </ul>
+                    </div>
                 </li>
                 <li class="side-nav-item" sec:authorize="hasAuthority('MEMBER_PAGE_VIEW')">
                     <a href="/member/member" class="side-nav-link">
@@ -69,10 +81,7 @@
                     <div class="collapse" id="sidebarOrder">
                         <ul class="side-nav-second-level">
                             <li sec:authorize="hasAuthority('ADMIN')">
-                                <a href=/apart/apart><i class="bi bi-arrow-right-short"></i> 주문목록</a>
-                            </li>
-                            <li sec:authorize="hasAuthority('ADMIN')">
-                                <a href="/apart/apart-user"><i class="bi bi-arrow-right-short"></i> 주문상세</a>
+                                <a href="/order/order"><i class="bi bi-arrow-right-short"></i> 주문목록</a>
                             </li>
                         </ul>
                     </div>
@@ -81,16 +90,13 @@
                     sec:authorize="hasAnyAuthority('ADMIN')">
                     <a data-bs-toggle="collapse" href="#sidebarPayment" aria-expanded="false" aria-controls="sidebarPayment" class="side-nav-link NavLink">
                         <i class="ri-home-4-fill"></i>
-                        <span> 주문관리 </span>
+                        <span> 결제관리 </span>
                         <span class="menu-arrow"></span>
                     </a>
                     <div class="collapse" id="sidebarPayment">
                         <ul class="side-nav-second-level">
                             <li sec:authorize="hasAuthority('ADMIN')">
-                                <a href=/apart/apart><i class="bi bi-arrow-right-short"></i> 주문목록</a>
-                            </li>
-                            <li sec:authorize="hasAuthority('ADMIN')">
-                                <a href="/apart/apart-user"><i class="bi bi-arrow-right-short"></i> 주문상세</a>
+                                <a href="/order/order"><i class="bi bi-arrow-right-short"></i> 결제내역</a>
                             </li>
                         </ul>
                     </div>
@@ -105,14 +111,11 @@
                     <div class="collapse" id="sidebarRefunds">
                         <ul class="side-nav-second-level">
                             <li sec:authorize="hasAuthority('ADMIN')">
-                                <a href=/apart/apart><i class="bi bi-arrow-right-short"></i> 환불요청</a>
+                                <a href="/refund/refund"><i class="bi bi-arrow-right-short"></i> 환불요청</a>
                             </li>
                             <li sec:authorize="hasAuthority('ADMIN')">
-                                <a href="/apart/apart-user"><i class="bi bi-arrow-right-short"></i> 환불처리내역</a>
+                                <a href="/refund/refund"><i class="bi bi-arrow-right-short"></i> 환불처리내역</a>
                             </li>
-                            <!--li sec:authorize="hasAuthority('ADMIN')">
-                                <a href="/apart/apart-user"><i class="bi bi-arrow-right-short"></i> 부분환불내역</a>
-                            </li-->
                         </ul>
                     </div>
                 </li>

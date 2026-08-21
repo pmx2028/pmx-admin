@@ -1,20 +1,22 @@
 package com.paramount.pmx.service.lesson;
 
 import com.paramount.pmx.model.DatatableDto;
+import com.paramount.pmx.model.apart.Apart;
+import com.paramount.pmx.model.apart.ApartDto;
 import com.paramount.pmx.model.apart.ApartUser;
 import com.paramount.pmx.model.apart.ApartUserDto;
 import com.paramount.pmx.model.enums.TimeCode;
-import com.paramount.pmx.model.lesson.Lesson;
-import com.paramount.pmx.model.lesson.LessonConfirmed;
-import com.paramount.pmx.model.lesson.LessonConfirmedDto;
-import com.paramount.pmx.model.lesson.LessonDto;
+import com.paramount.pmx.model.lesson.*;
 import com.paramount.pmx.model.response.Response;
 import com.paramount.pmx.model.response.ResponseDto;
+import com.paramount.pmx.repository.apart.ApartRepository;
 import com.paramount.pmx.repository.apart.ApartUserRepository;
 import com.paramount.pmx.repository.lesson.LessonConfirmedRepository;
 import com.paramount.pmx.repository.lesson.LessonRepository;
 import com.paramount.pmx.security.CustomUserDetails;
+import com.paramount.pmx.specs.apart.SearchApartSpec;
 import com.paramount.pmx.specs.apart.SearchApartUserSpec;
+import com.paramount.pmx.specs.lesson.SearchLessonConfirmedSpec;
 import com.paramount.pmx.specs.lesson.SearchLessonSpec;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +37,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.paramount.pmx.model.lesson.LessonConfirmedDto.toDto;
 import static com.paramount.pmx.model.lesson.LessonDto.tohealthGolfList;
 
 @Service
@@ -45,6 +48,7 @@ public class LessonService {
     private final LessonRepository lessonRepository;
     private final LessonConfirmedRepository lessonConfirmedRepository;
     private final ApartUserRepository apartUserRepository;
+
 
     //GX , 트리트니 리스트 조회
     public ResponseDto getGxtuniLessonList(Map<String, Object> requestParams, CustomUserDetails userDetails) {
@@ -363,17 +367,18 @@ public class LessonService {
 
         List<LessonConfirmed> lessonConfirmedList = lessonConfirmedRepository.findByYearAndMonthAndApartId(year, month, apartId);
         if (lessonConfirmedList.isEmpty()) {
-            Map<String, Object> result = new HashMap<>();
-            result.put("id", null);
-            result.put("year", year);
-            result.put("month", month);
-            result.put("apartId", apartId);
-            result.put("confirmed", null);
-            return Response.ok(result);
+            return Response.ok(LessonConfirmedDto.builder()
+                    .id(null)
+                    .year(year)
+                    .month(month)
+                    .apartId(apartId)
+                    .confirmed(null)
+                    .build());
         }
 
         return Response.ok(LessonConfirmedDto.toDto(lessonConfirmedList.get(0)));
     }
+
 
     @Transactional
     public ResponseDto createLessonConfirmed(LessonConfirmedDto reqDto, CustomUserDetails userDetails) {
@@ -401,6 +406,60 @@ public class LessonService {
         return Response.ok(true);
     }
 
+
+    public ResponseDto getApartLessonConfirmedList(Map<String, Object> requestParams , CustomUserDetails userDetails) {
+        DatatableDto datatableDto = new DatatableDto(
+                requestParams,
+                Sort.by(Sort.Order.asc("name")),
+                SearchLessonConfirmedSpec::getValidSortKey
+        );
+        String year = parseString(getRequestValue(requestParams, "YEAR_IS", "year"));
+        String month = parseString(getRequestValue(requestParams, "MONTH_IS", "month"));
+        Long apartId = parseLong(getRequestValue(requestParams, "APART_ID_IS", "apartId"));
+        Object confirmedValue = getRequestValue(requestParams, "CONFIRMED_IS", "confirmed");
+        Long confirmed = parseLong(confirmedValue);
+        boolean unregistered = confirmedValue != null && parseString(confirmedValue).isBlank();
+        Long addressId = parseLong(getRequestValue(requestParams, "ADDRESS_ID_IS", "addressId"));
+        Long addressId1 = parseLong(getRequestValue(requestParams, "ADDRESS1_ID_IS", "addressId1"));
+        String name = parseString(getRequestValue(requestParams, "NAME_LIKE", "name"));
+
+        if (year == null || month == null) {
+            throw new IllegalArgumentException("연도, 월 정보가 필요합니다.");
+        }
+
+        List<Map<String, Object>> filteredResult = lessonConfirmedRepository.findApartWithLessonConfirmed(
+                year,
+                month,
+                apartId,
+                confirmed,
+                addressId,
+                addressId1,
+                name,
+                unregistered
+        );
+        int start = Math.max(datatableDto.getStart(), 0);
+        int length = Math.max(datatableDto.getLength(), 1);
+        int end = Math.min(start + length, filteredResult.size());
+        List<Map<String, Object>> result = start >= filteredResult.size()
+                ? List.of()
+                : filteredResult.subList(start, end).stream()
+                .map(row -> {
+                    Map<String, Object> normalized = new HashMap<>(row);
+                    if (normalized.get("confirmed") == null) {
+                        normalized.put("confirmed", "");
+                    }
+                    return normalized;
+                })
+                .toList();
+        long recordsTotal = filteredResult.size();
+
+        return Response.ok(
+                result,
+                datatableDto.getDraw(),
+                recordsTotal,
+                recordsTotal
+        );
+    }
 
     public List<Map<String, Object>> getLessonWeekdayTimeList(Long apartId, CustomUserDetails userDetails) {
         Set<Long> apartUserWeekdayCodes = new HashSet<>(getAparUserWeekdayCodeList(apartId, userDetails));

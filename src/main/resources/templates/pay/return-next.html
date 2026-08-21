@@ -1,0 +1,36 @@
+<!--
+  헥토파이낸셜 결제 완료 후 이동되는 nextUrl 랜딩 페이지.
+  iframe 결제 UI에서는 보통 postMessage 콜백으로 결제창(checkout.html) 안에서 결과가 처리되지만,
+  팝업/리다이렉트 방식으로 진행된 경우를 대비한 fallback 화면이다.
+-->
+<!DOCTYPE html>
+<th:block th:replace="~{layout/base-layout :: base-layout(
+            pageContent=~{::pageContent},
+            pageHead=~{::pageHead},
+            pageModal=~{::pageModal},
+            pageScript=~{::pageScript},
+            title='결제완료',
+            subtitle='결제'
+        )}">
+
+    <th:block th:fragment="pageHead"></th:block>
+
+    <th:block th:fragment="pageContent">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-6">
+                <div class="card">
+                    <div class="card-body text-center p-4">
+                        <i class="ri-checkbox-circle-fill text-success" style="font-size:3rem;"></i>
+                        <h5 class="mt-2">결제 요청이 접수되었습니다.</h5>
+                        <p class="text-muted">최종 승인 여부는 결제내역 목록에서 확인해 주세요.</p>
+                        <a href="/order/order" class="btn btn-primary">주문/결제 목록으로 이동</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </th:block>
+
+    <th:block th:fragment="pageModal"></th:block>
+    <th:block th:fragment="pageScript"></th:block>
+
+</th:block>

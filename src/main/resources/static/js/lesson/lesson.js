@@ -10,6 +10,7 @@ const PageState = {
     gxTuniApartUsersApartId: null,
     lessonConfirmedStatus: null,
     lessonConfirmedId: null,
+    pendingOrder: null,
 };
 
 const TAB_CONFIG = {
@@ -32,13 +33,16 @@ const TAB_CONFIG = {
 
 document.addEventListener("DOMContentLoaded", async () => {
     initYearMonthSearch();
+    applySearchParamsFromUrl();
     await initSearchAddressCascader();
     await reloadApartSelect();
     bindSearchEvents();
     bindTabEvents();
     bindBulkSaveEvent();
     bindConfirmedStatusEvent();
-    void reloadLessonConfirmedStatus();
+    bindLessonApplyEvent();
+    bindOrderConfirmModalEvents();
+    await reloadLessonConfirmedStatus();
     void reloadLessonTable(true);
 });
 
@@ -58,6 +62,19 @@ function initYearMonthSearch() {
         monthSelect.appendChild(opt);
     }
     monthSelect.value = String(now.getMonth() + 1).padStart(2, "0");
+}
+
+function applySearchParamsFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const year = params.get("year");
+    const month = params.get("month");
+    const apartId = params.get("apartId");
+
+    if (year) setVal("search-year", year);
+    if (month) setVal("search-month", month.padStart(2, "0"));
+    if (apartId) {
+        PageState.selectedApartId = Number(apartId);
+    }
 }
 
 function bindSearchEvents() {
@@ -88,20 +105,10 @@ function bindSearchEvents() {
         await runSearch();
     });
 
-    $id("search-year")?.addEventListener("change", () => {
-        void reloadLessonConfirmedStatus();
-        void reloadLessonTable(true);
-    });
-    $id("search-month")?.addEventListener("change", () => {
-        void reloadLessonConfirmedStatus();
-        void reloadLessonTable(true);
-    });
     $id("search-target-apart")?.addEventListener("change", () => {
         PageState.selectedApartId = toNumOrNull(getVal("search-target-apart"));
         PageState.gxTuniApartUsers = [];
         PageState.gxTuniApartUsersApartId = null;
-        void reloadLessonConfirmedStatus();
-        void reloadLessonTable(true);
     });
 }
 
@@ -126,6 +133,162 @@ function bindBulkSaveEvent() {
 
 function bindConfirmedStatusEvent() {
     $id("btn-confirmed-status")?.addEventListener("click", handleConfirmedStatusClick);
+}
+
+function bindLessonApplyEvent() {
+    document.addEventListener("click", (event) => {
+        const btn = event.target.closest(".btn-lesson-apply");
+        if (!btn) return;
+
+        void handleLessonApplyClick(btn);
+    });
+}
+
+async function handleLessonApplyClick(btn) {
+    if (btn.disabled) return;
+
+    const row = getLessonRowFromButton(btn);
+    const payload = buildLessonOrderPayload(row, btn);
+
+    if (payload == null) {
+        alert("주문 생성에 필요한 강습 정보를 찾을 수 없습니다.");
+        return;
+    }
+
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = "처리 중...";
+
+    try {
+        const orderResp = await postJson("/api/orders", payload);
+        const order = orderResp?.data;
+        if (order?.id == null) {
+            throw new Error("생성된 주문 정보를 확인할 수 없습니다.");
+        }
+
+        openOrderConfirmModal(order);
+    } catch (err) {
+        console.error(err);
+        alert(err.message || "신청 처리 중 오류가 발생했습니다.");
+    } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
+    }
+}
+
+function bindOrderConfirmModalEvents() {
+    $id("btn-order-confirm-card")?.addEventListener("click", () => void handlePaymentMethodClick("CARD"));
+    $id("btn-order-confirm-vbank")?.addEventListener("click", () => void handlePaymentMethodClick("VBANK"));
+}
+
+function openOrderConfirmModal(order) {
+    PageState.pendingOrder = order;
+
+    setText("order-confirm-no", order.orderNo ?? "-");
+    setText("order-confirm-name", order.orderName ?? "-");
+    setText("order-confirm-amount", formatCurrency(order.orderAmount));
+    setText("order-confirm-discount", formatCurrency(order.discountAmount));
+    setText("order-confirm-payment-amount", formatCurrency(order.paymentAmount));
+
+    setOrderConfirmButtonsDisabled(false);
+
+    const modalEl = $id("order-confirm-modal");
+    if (modalEl) {
+        bootstrap.Modal.getOrCreateInstance(modalEl).show();
+    }
+}
+
+async function handlePaymentMethodClick(paymentMethod) {
+    const order = PageState.pendingOrder;
+    if (order?.id == null) {
+        alert("주문정보를 확인할 수 없습니다. 다시 시도해 주세요.");
+        return;
+    }
+
+    setOrderConfirmButtonsDisabled(true);
+
+    try {
+        const paymentResp = await postJson("/api/payments", {
+            orderId: order.id,
+            pgCompany: "HECTO",
+            paymentMethod,
+            amount: order.paymentAmount,
+        });
+        const paymentId = paymentResp?.data?.id;
+        if (paymentId == null) {
+            throw new Error("생성된 결제 정보를 확인할 수 없습니다.");
+        }
+
+        window.location.href = `/pay/checkout/${paymentId}`;
+    } catch (err) {
+        console.error(err);
+        alert(err.message || "결제 요청 처리 중 오류가 발생했습니다.");
+        setOrderConfirmButtonsDisabled(false);
+    }
+}
+
+function setOrderConfirmButtonsDisabled(disabled) {
+    $id("btn-order-confirm-card")?.toggleAttribute("disabled", disabled);
+    $id("btn-order-confirm-vbank")?.toggleAttribute("disabled", disabled);
+}
+
+function formatCurrency(amount) {
+    const value = toNumOrNull(amount);
+    return value == null ? "-" : `${value.toLocaleString()}원`;
+}
+
+function setText(id, text) {
+    const el = $id(id);
+    if (el) el.textContent = text;
+}
+
+function getLessonRowFromButton(btn) {
+    const table = $("#lessonDataTable").DataTable();
+    const tr = btn.closest("tr");
+    if (tr == null) return null;
+
+    const rowApi = table.row(tr);
+    if (rowApi?.data() != null) {
+        return rowApi.data();
+    }
+
+    const parentRow = tr.previousElementSibling;
+    if (parentRow != null) {
+        return table.row(parentRow).data() ?? null;
+    }
+
+    return null;
+}
+
+function buildLessonOrderPayload(row, btn) {
+    const lessonId = toNumOrNull(btn.dataset.lessonId) ?? row?.id ?? row?.lessonId ?? null;
+    const memberId = toNumOrNull(btn.dataset.memberId) ?? row?.memberId ?? row?.userId ?? null;
+    const apartId = row?.apartId ?? PageState.selectedApartId ?? toNumOrNull(getVal("search-target-apart"));
+    const orderAmount = toNumOrNull(row?.lessonPrice);
+
+    if (lessonId == null || memberId == null || orderAmount == null) {
+        return null;
+    }
+
+    return {
+        memberId,
+        apartId,
+        lessonId,
+        orderName: getLessonOrderName(row),
+        orderAmount,
+        discountAmount: 0,
+    };
+}
+
+function getLessonOrderName(row) {
+    const year = row?.year ?? getVal("search-year");
+    const month = row?.month ?? getVal("search-month");
+    const lessonName = [row?.categoryName, row?.categoryName1].filter(Boolean).join(" ");
+    const timeName = [row?.weekdayName, row?.timeName].filter(Boolean).join(" ");
+
+    return [year && month ? `${year}년 ${month}월` : "", lessonName, timeName]
+        .filter(Boolean)
+        .join(" ");
 }
 
 async function ensureLessonTabResources() {
@@ -369,6 +532,7 @@ function applyLessonConfirmedLock() {
     $id("btn-bulk-save")?.toggleAttribute("disabled", locked);
 
     document.querySelectorAll("#lessonDataTable input, #lessonDataTable select, #lessonDataTable button").forEach((control) => {
+        if (control.classList.contains("btn-lesson-apply")) return;
         control.disabled = locked;
     });
 }
@@ -477,34 +641,33 @@ async function initSearchAddressCascader() {
     $id("search-target-depth1")?.addEventListener("change", async () => {
         const addressId = toNumOrNull(getVal("search-target-depth1"));
         await loadAddress1Select(addressId, "search-target-depth2", { placeholder: "전체", placeholderValue: "-" });
-        await reloadApartSelect();
-    });
-
-    $id("search-target-depth2")?.addEventListener("change", async () => {
-        await reloadApartSelect();
     });
 }
 
 async function reloadApartSelect() {
-    const previousApartId = getVal("search-target-apart");
+    const previousApartId = getVal("search-target-apart") !== "-"
+        ? getVal("search-target-apart")
+        : PageState.selectedApartId;
     const params = new URLSearchParams({
         draw: "1",
         start: "0",
         length: "200",
+        search_YEAR_IS: getVal("search-year"),
+        search_MONTH_IS: getVal("search-month"),
     });
 
-    //const keyword = getVal("target-text");
+    const keyword = getVal("target-text");
     const addressId = getVal("search-target-depth1");
     const addressId1 = getVal("search-target-depth2");
 
-    //if (keyword) params.set("search_NAME_LIKE", keyword);
+    if (keyword) params.set("search_NAME_LIKE", keyword);
     if (addressId && addressId !== "-") params.set("search_ADDRESS_ID_IS", addressId);
     if (addressId1 && addressId1 !== "-") params.set("search_ADDRESS1_ID_IS", addressId1);
 
-    const resp = await fetchJson(`/api/aparts?${params.toString()}`);
+    const resp = await fetchJson(`/api/lessons/confirmed/lesson?${params.toString()}`);
     const items = normalizeList(resp).map((item) => ({
-        id: item.id,
-        name: item.name,
+        id: item.apartId,
+        name: item.apartName,
     }));
 
     fillSelect("search-target-apart", items, { placeholder: "아파트 선택", placeholderValue: "-" });
@@ -624,7 +787,8 @@ function getGxTuniTableColumns() {
             width: "10%",
             render: (value, type, row) => {
                 const status = value ?? row.lessonActivated;
-                return Number(status) === 1 ? "운영" : Number(status) === 0 ? "폐강" : "-"
+                const statusText = Number(status) === 1 ? "운영" : Number(status) === 0 ? "폐강" : "-";
+                return renderLessonStatusWithApplyButton(statusText, row);
             },
         },
         {
@@ -921,10 +1085,33 @@ function getHealthGolfTableColumns() {
             width: "10%",
             render: (value, type, row) => {
                 const status = value ?? row.lessonActivated ?? row.apartUserActivated;
-                return Number(status) === 0 ? "미운영" : "운영";
+                const statusText = Number(status) === 0 ? "미운영" : "운영";
+                return renderLessonStatusWithApplyButton(statusText, row);
             },
         },
     ];
+}
+
+function renderLessonStatusWithApplyButton(statusText, row) {
+    const label = escapeHtml(statusText ?? "-");
+    if (!isLessonConfirmed() || !hasAssignedTeacher(row)) {
+        return label;
+    }
+
+    return `
+        <div class="d-inline-flex align-items-center justify-content-center gap-1 flex-wrap">
+            <span>${label}</span>
+            <button type="button" class="btn btn-sm btn-outline-primary btn-lesson-apply"
+                data-lesson-id="${escapeAttr(row.id ?? row.lessonId ?? "")}"
+                data-member-id="${escapeAttr(row.memberId ?? row.userId ?? "")}">
+                신청
+            </button>
+        </div>
+    `;
+}
+
+function hasAssignedTeacher(row) {
+    return (row?.userId != null && row.userId !== "") || Boolean(row?.userName);
 }
 
 function rowNumberColumn(width) {

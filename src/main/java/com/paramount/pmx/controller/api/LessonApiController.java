@@ -100,6 +100,16 @@ public class LessonApiController {
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 
+    /** 아파트 정보 + 해당 연월 강습확정 정보 조회 (LEFT JOIN) */
+    @GetMapping("/confirmed/lesson")
+    public ResponseEntity<ResponseDto> getApartLessonConfirmedList(
+            @RequestParam Map<String, Object> requestParams,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        ResponseDto responseDto = lessonService.getApartLessonConfirmedList(requestParams, userDetails);
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
+    }
+
     @PostMapping("/confirmed")
     public ResponseEntity<ResponseDto> createLessonConfirmed(
             @RequestBody LessonConfirmedDto reqDto,

@@ -1,0 +1,34 @@
+<!--
+  헥토파이낸셜 결제 취소/실패 후 이동되는 cancUrl 랜딩 페이지 (fallback 화면).
+-->
+<!DOCTYPE html>
+<th:block th:replace="~{layout/base-layout :: base-layout(
+            pageContent=~{::pageContent},
+            pageHead=~{::pageHead},
+            pageModal=~{::pageModal},
+            pageScript=~{::pageScript},
+            title='결제취소',
+            subtitle='결제'
+        )}">
+
+    <th:block th:fragment="pageHead"></th:block>
+
+    <th:block th:fragment="pageContent">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-6">
+                <div class="card">
+                    <div class="card-body text-center p-4">
+                        <i class="ri-close-circle-fill text-danger" style="font-size:3rem;"></i>
+                        <h5 class="mt-2">결제가 취소되었습니다.</h5>
+                        <p class="text-muted">결제내역 목록에서 다시 시도할 수 있습니다.</p>
+                        <a href="/order/order" class="btn btn-primary">주문/결제 목록으로 이동</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </th:block>
+
+    <th:block th:fragment="pageModal"></th:block>
+    <th:block th:fragment="pageScript"></th:block>
+
+</th:block>

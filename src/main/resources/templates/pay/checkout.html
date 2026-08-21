@@ -1,0 +1,52 @@
+<!--
+  헥토파이낸셜(SettlePG) 결제창 호출 화면.
+  /pay/checkout/{paymentId} 로 진입하면 결제요청 정보를 조회한 뒤 SETTLE_PG.pay()를 호출한다.
+-->
+<!DOCTYPE html>
+<th:block th:replace="~{layout/base-layout :: base-layout(
+            pageContent=~{::pageContent},
+            pageHead=~{::pageHead},
+            pageModal=~{::pageModal},
+            pageScript=~{::pageScript},
+            title='결제진행',
+            subtitle='결제'
+        )}">
+
+    <!-- head block -->
+    <th:block th:fragment="pageHead">
+        <link href="/css/management.css" rel="stylesheet" type="text/css" />
+    </th:block>
+
+    <!-- content block -->
+    <th:block th:fragment="pageContent">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-6">
+                <div class="card">
+                    <div class="card-body text-center p-4" id="pay-status-panel">
+                        <div class="spinner-border text-primary mb-3" role="status" id="pay-spinner">
+                            <span class="visually-hidden">로딩중...</span>
+                        </div>
+                        <h5 id="pay-status-title">결제창을 불러오는 중입니다...</h5>
+                        <p class="text-muted mb-0" id="pay-status-message">잠시만 기다려 주세요.</p>
+                        <button type="button" class="btn btn-light mt-3 d-none" id="btn-pay-close">닫기</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </th:block>
+
+    <!-- modal block -->
+    <th:block th:fragment="pageModal">
+    </th:block>
+
+    <!-- script block -->
+    <th:block th:fragment="pageScript">
+        <!-- 헥토파이낸셜(SettlePG) 결제창 SDK: 외부 스크립트이므로 로컬 번들에 포함하지 않고 그대로 로드한다. -->
+        <script src="https://tbnpg.settlebank.co.kr/resources/js/v1/SettlePG_v1.2.js"></script>
+        <script th:inline="javascript">
+            window.paymentId = /*[[${paymentId}]]*/ null;
+        </script>
+        <script type="module" src="/js/pay/checkout.js"></script>
+    </th:block>
+
+</th:block>

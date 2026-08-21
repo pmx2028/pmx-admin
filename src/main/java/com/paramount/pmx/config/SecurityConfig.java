@@ -124,6 +124,8 @@ public class SecurityConfig {
                         .requestMatchers("/css/**", "/data/**", "/fonts/**",  "/images/**", "/js/**" , "/vendor/**" , "/storage/**", "/health", "/error", "/error/**").permitAll()
                         .requestMatchers(LOGIN_PAGE, LOGOUT_URL, LOGIN_SUCCESS_URL).permitAll()
                         .requestMatchers("/actuator/prometheus").permitAll()
+                        // 헥토파이낸셜 결제서버 → 가맹점 서버 결과통보(notiUrl). PG 서버가 세션/CSRF 토큰 없이 직접 호출한다.
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/pay/hecto/notify").permitAll()
 
                         /* 화면(HTML) 라우트 권한 */
                         // 홈
@@ -208,7 +210,7 @@ public class SecurityConfig {
             );
 
             csrf.csrfTokenRepository(csrfRepository)
-                    .ignoringRequestMatchers("/error/**", SIGNIN_URL, LOGOUT_URL);
+                    .ignoringRequestMatchers("/error/**", SIGNIN_URL, LOGOUT_URL, "/api/pay/hecto/notify");
         });
         http.headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
 

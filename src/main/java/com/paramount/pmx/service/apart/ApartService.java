@@ -41,7 +41,7 @@ public class ApartService {
 
     private final ApartRepository apartRepository;
 
-    // 회원정보 리스트 조회
+    // 아파트 리스트 조회
     public ResponseDto getAllApartList(Map<String, Object> requestParams, CustomUserDetails userDetails) {
         // 1. DatatableDto 생성
         Sort defaultSort = Sort.by(
@@ -174,6 +174,5 @@ public class ApartService {
         apartRepository.save(apart);
         return Response.ok(true);
     }
-
 
 }
