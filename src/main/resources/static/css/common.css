@@ -141,16 +141,6 @@ table { --ct-table-hover-bg: var(--ct-primary-bg-subtle) !important; } /* 행 ho
 /* dropdown-menu 위치 */
 .dropdown-menu-animated.show { top: 70px !important; }
 
-.reporter-topbar .header-title, .desk-topbar .header-title { margin-bottom: 0; }
-.reporter-topbar .text-nowrap { display: inline-block !important; }
-.desk-topbar { position: relative; overflow: visible; }
-.chart-bar-panel {
-    position: absolute; top: 100%; left: 0; right: 0; z-index: 1025; margin-top: 0; background: var(--ct-secondary-bg);
-    border: 1px solid var(--ct-border-color); box-shadow: var(--ct-box-shadow);
-}
-.chart-bar-inner { padding: 0.75rem 0; }
-#chartdiv { width: 90%; height: 250px; margin: 0 auto; overscroll-behavior: contain; }
-
 /*------------------------------------------*/
 /* 커스텀 심플바                              */
 /*------------------------------------------*/
@@ -200,22 +190,6 @@ table { --ct-table-hover-bg: var(--ct-primary-bg-subtle) !important; } /* 행 ho
 
 
 /*------------------------------------------*/
-/* 이력 확장                                 */
-/*------------------------------------------*/
-/* 이력확장 수정중 */
-.time-area .collapse { display: block; z-index: 1001; overflow: visible !important; background: #fff !important; border: 1px solid #dee2e6 !important; box-shadow: var(--ct-box-shadow); margin: 0 !important; font-size: .8rem;}
-
-/* 이력창 */
-.reset-checkboxes-on-show-collapse .card { height: auto !important; max-height: none !important; }
-.reset-checkboxes-on-show-collapse .collapse-item { display: block; width: 100%; padding: 0.3rem 0; clear: both; font-weight: 400; text-align: left; white-space: nowrap; background-color: transparent; border-bottom: 1px solid var(--ct-border-color);}
-.reset-checkboxes-on-show-collapse .collapse-item strong::before {content: "-"; margin-left:.35em; padding-right:.35em;}
-.reset-checkboxes-on-show-collapse .collapse-item strong::after {content: "/"; margin-left:.35em; padding-right:.35em;}
-
-.reset-checkboxes-on-show-collapse.collapse {
-    background: #fff !important;  border: 1px solid #dee2e6 !important; box-shadow: var(--ct-box-shadow) !important; margin: 0 !important; font-size: .8rem;
-}
-
-/*------------------------------------------*/
 /* 시리즈 미리보기 이미지 사이즈 적용           */
 /*------------------------------------------*/
 /* 이미지  */
@@ -226,55 +200,13 @@ table { --ct-table-hover-bg: var(--ct-primary-bg-subtle) !important; } /* 행 ho
 .offcanvas-body figure.image_resized { margin-left: auto; margin-right: auto; display: table; }
 
 
-/* FullCalendar setting */
-/* today bg-color*/
-.fc .fc-daygrid-day.fc-day-today { background: var(--ct-primary-bg-subtle) !important; }
-/* 일반적인 날짜 칸 hover 효과 */
-.fc-daygrid-day:hover { background-color: color-mix(in srgb, var(--ct-primary-bg-subtle), transparent 50%) !important; }
-
 /* 카테고리 추가시 빼기버튼 넓이조정 - 에디터 */
 .category-selector-box .category-minus-btn { padding: .45rem .99rem !important; }
-
-
-/*------------------------------------------*/
-/* 기사 미리보기 모달 공통설정                  */
-/*------------------------------------------*/
-#view-modal .modal-footer { display: flex; justify-content: space-between; }
-
-
-/*------------------------------------------*/
-/* 풀캘린더 헤드                              */
-/*------------------------------------------*/
-#calendar .fc-col-header-cell,
-#calendar2 .fc-col-header-cell { background-color: var(--ct-gray-200) !important; padding-top: .315rem; padding-bottom: .315rem }
-.fc-col-header { border-top: 2px solid rgba(var(--ct-dark-rgb), 1)  !important; width:100% !important;  }
-
-/* 다크모드 */
-[data-bs-theme="dark"] #calendar .fc-col-header-cell,
-[data-bs-theme="dark"] #calendar2 .fc-col-header-cell {
-    background-color: var(--third-depth-bg) !important;
-}
-
-[data-bs-theme="dark"] .fc-col-header { border-top: 2px solid rgba(206, 212, 218, .6) !important; }
 
 /*------------------------------------------*/
 /* 에디터 테이블 선색 변경                     */
 /*------------------------------------------*/
 .ck.ck-balloon-panel { z-index: 2100 !important; }
-/* 테이블 보더영역  */
-.ck.ck-form__row.ck-table-form__border-row { display: none !important; }
-
-/*------------------------------------------*/
-/* 에디터 embed                             */
-/*------------------------------------------*/
-.ck-widget.html-object-embed { padding: 0 !important; }
-.ck-widget.html-object-embed::before { top:6px !important;}
-.ck-widget.html-object-embed .html-object-embed__content { max-width: 100%; }
-.content-area .obj_container.embed > iframe, .content-area figure.embed > iframe, .redactor-layer .obj_container.embed > iframe, .redactor-layer figure.embed > iframe,
-.content-area .obj_container iframe{ width: 100%; height : 100%; aspect-ratio: 755 / 476; }
-
-.original-content .obj_container.embed > iframe, .original-content figure.embed > iframe, .original-content .obj_container iframe,
-.diff.obj_container.embed > iframe, .diff figure.embed > iframe, .diff .obj_container iframe { width: 100%; height : 100%; aspect-ratio: 755 / 476; }
 
 
 @media (min-width: 1480px) {
@@ -307,21 +239,6 @@ table { --ct-table-hover-bg: var(--ct-primary-bg-subtle) !important; } /* 행 ho
 @media (min-width: 1328px) {
     .d-xxl-block { display: block !important;  }
 }
-@media (min-width: 768px) and (max-width: 1289px) {
-    /* topbar left  */
-    #bar-state { width: 100% !important; }
-    /* reporter-topbar right  */
-    .reporter-topbar .d-sm-inline-block, .reporter-topbar .d-none.d-lg-inline-block { display: none !important; }
-}
-
-/* 메뉴중 모바일에서 나오지 않는 메뉴 설정 */
-@media screen and (max-width: 768px) {
-    .side-nav-item.only-pc,
-    .side-nav-item .only-pc {
-        display: none !important;
-    }
-}
-
 /*------------------------------------------*/
 /* only 모바일 + 폴드 공통                    */
 /*------------------------------------------*/
@@ -329,38 +246,9 @@ table { --ct-table-hover-bg: var(--ct-primary-bg-subtle) !important; } /* 행 ho
     /* 사이드바 메뉴간격 */
     .leftside-menu { line-height: 1.5; }
 
-    .reporter-topbar .col.border-end { height: 2.4rem; }
-
-    /*------------ 데스크 -------------*/
     /* 데스크 상단바 공통 */
     .navbar-custom { padding: 0; }
     .navbar-custom .topbar {padding-left: 0.625rem; padding-right: 0.625rem;}
-
-    .navbar-custom .desk-bar .flex-grow-1 h4 a {pointer-events: none;}
-
-    .desk-bar {position:relative; padding: 0.1rem 0.625rem !important;}
-    .desk-bar .collapse {padding: 0.625rem 0; height:auto;}
-    .desk-bar .collapsing {height:0; overflow: hidden; -webkit-transition: height 0.1s ease; transition: height 0.1s ease; padding: 0.625rem 0;}
-    .chart-bar-panel {
-        position: static;
-        border-left: 0;
-        border-right: 0;
-        box-shadow: none;
-    }
-    .chart-bar-inner {
-        padding: 0.625rem 0;
-    }
-    #chartdiv {
-        width: 100%;
-        height: 220px;
-    }
-    .m-btn {
-        position:absolute; top:-1rem; padding:0.1rem 0.9rem; background-color: rgba(var(--ct-tertiary-bg-rgb), 1) !important;
-        border-top-left-radius: 0.6rem; border-top-right-radius: 0.6rem;  line-height:0.9rem;
-    }
-    .m-btn::before {content: "\f361"; font-family:remixicon !important; display:inline-block; font-size:0.9rem; color: var(--ct-tertiary-color) !important;}
-    .m-btn::before {transition:transform 0.2s ease-in-out; transform:rotate(0deg) !important; }
-    .m-btn:not(.collapsed)::before {transform:rotate(-180deg) !important;}
 }
 
 /*------------------------------------------*/
@@ -377,44 +265,12 @@ table { --ct-table-hover-bg: var(--ct-primary-bg-subtle) !important; } /* 행 ho
     :root { --ct-leftbar-width: 210px; }
     /* 사이드바 로고 */
     .mobile-logo { display: block; }
-
-    /*---------- 데스크 상단바 ----------*/
-    /* 데스크 상단바 */
-    .reporter-topbar .header-title, .desk-topbar .header-title { margin-bottom: 0; }
-    .m-btn { right:16rem; }
-
-    .collapse.d-md-block.desk-state { display: none !important;}
-    .d-md-block.desk-state.collapse.show { display: block !important;}
-
-    /*---------- index ----------*/
-    .card-title .d-sm-block { display: none !important; }
-
-    /*---------- 커스텀 심플바 ----------*/
-    /* 심플바 커스텀 */
-    .scrollable-container { -webkit-overflow-scrolling: touch !important; touch-action: pan-x pan-y !important; overflow-x: auto !important;  }
-    /* SimpleBar 사용 시 내부 콘텐츠 영역 설정 */
-    .simplebar-content-wrapper {  touch-action: auto !important; }
-    /* 페이지네이션 위치 */
-    .dataTables_paginate ul { margin:  0 !important; }
-
-    /*------------ 커스텀 daterangepicker -------------*/
-    .daterangepicker.mobile-picker { position: fixed !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) !important;
-        width: 75% !important; min-width: 320px !important; max-height: 95vh; overflow-y: auto !important; }
-
-    /* 데스크검색 구분바 */
-
 }
 
 /*------------------------------------------*/
 /* 모바일                                    */
 /*------------------------------------------*/
 @media screen and (max-width: 640px) {
-    /* 테이블 헤더 공통세팅 */
-    .dataTables_wrapper::before, .simplebar-content::before, tab-article::before { display: none; }
-
-    /* 셀렉트박스 간격 관련 - 한 묶음으로 칠 때 간격 줄임 */
-    .selectbox-pe-0 { padding-right: calc(var(--ct-gutter-x) * 0.5) !important; }
-
     /*-------- 사이드바 --------*/
     /* 사이드바 side-nav-link 넓이 제어 */
     :root { --ct-leftbar-width: 210px; }
@@ -428,57 +284,6 @@ table { --ct-table-hover-bg: var(--ct-primary-bg-subtle) !important; } /* 행 ho
     .d-mobile-inline-block { display: inline-block !important; }
     /* dropdown-menu */
     .navbar-custom .dropdown .dropdown-menu { width: 50%; left: auto !important; }
-
-    /* 테이블 카드뷰 전환시 데이터 없을 경우 */
-    .card-item.empty-item { border: none !important; padding: 1rem 0 !important; text-align: center}
-
-    .dataTables_paginate { padding: 0 !important;}
-
-    /*------------ 데스크 -------------*/
-    /* 데스크 상단바 */
-    .navbar-custom .desk-bar .flex-grow-1 h4 a {pointer-events: none;}
-
-    .m-btn { right:5rem; }
-
-    .desk-bar .border-end:nth-child(1), .desk-bar .border-end:nth-child(2) {margin-bottom: 0.7rem;}
-    .desk-bar .border-end:nth-child(2) {border-right: none !important;}
-    .desk-bar .top-bar-tit h4 {width:auto; display: inline-block; vertical-align: middle;}
-    .desk-bar  .top-bar-tit .avatar-sm {text-align: center;}
-    #chartdiv { height: 200px; }
-
-    .reporter-topbar .header-title { font-size: .85rem; }
-    .reporter-topbar .top-bar-tit h4 { width: auto; min-width: 2rem; }
-
-    /*------------ 커스텀 심플바 -------------*/
-    /* 심플바 카드뷰 너비 */
-    .table-inner-wrapper, .scrollable-container table {  min-width: 100% !important; }
-
-    /* 스크롤 컨테이너에 추가 */
-    .scrollable-container { -webkit-overflow-scrolling: touch !important; touch-action: pan-x pan-y !important; overflow-x: auto !important; padding-bottom: 0rem; }
-    /* SimpleBar 사용 시 내부 콘텐츠 영역 설정 */
-    .simplebar-content-wrapper { touch-action: auto !important; }
-    /* 페이지네이션 위치 */
-    .dataTables_paginate ul { margin:  0 !important; }
-
-    /*------------ 커스텀 daterangepicker -------------*/
-    .daterangepicker.mobile-picker {
-        position: fixed !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) !important;
-        width: 75% !important; min-width: 270px !important; max-height: 95vh; overflow-y: auto !important; }
-
-    /* 모바일에서는 달력 세로*/
-    .daterangepicker.mobile-picker { flex-direction: column !important; }
-    .daterangepicker.mobile-picker .drp-calendar { max-width: 100% !important; width: 100% !important; }
-    /* 선택된 시간 textb*/
-    .daterangepicker .drp-selected { display: block !important; margin-bottom: .325rem; }
-
-    /* single datepicker는 기간 영역 보이지 않도록*/
-    .daterangepicker.mobile-single-picker .drp-selected { display: none !important; }
-
-    /* 데스크검색 구분바 */
-    .divider-f:before { content: ''; margin: 0; display: none; }
-
-    /* file 종류  */
-[class^="ic-file-"], [class*=" ic-file-"] { font-size: 1.5rem !important; }
 }
 
 .mobile-breakpoint-alert-container {
@@ -500,4 +305,40 @@ table { --ct-table-hover-bg: var(--ct-primary-bg-subtle) !important; } /* 행 ho
     transform: translateY(-50%) scale(0.78);
     transform-origin: center;
 }
+
+
+/*----------------------------------*/
+/* 로그인 페이지 (etc.css 통합)        */
+/*----------------------------------*/
+.login-box .test { position: fixed; height: 100vh; overflow: hidden; width: 100%; }
+.background_background__3Oeal { width: 100%; height: 100%; background: #0c092a; position:relative}
+
+.background_background__3Oeal > span { width: 50vmin; height: 50vmin; border-radius: 50vmin; -webkit-backface-visibility: hidden; backface-visibility: hidden; position: absolute; -webkit-animation-name: background_move__307V1; -moz-animation-name: background_move__307V1; animation-name: background_move__307V1; -webkit-animation-duration: 30s; -moz-animation-duration: 30s; animation-duration: 30s; -webkit-animation-timing-function: linear; -moz-animation-timing-function: linear; animation-timing-function: linear; -webkit-animation-iteration-count: infinite; -moz-animation-iteration-count: infinite; animation-iteration-count:infinite}
+
+.background_background__3Oeal > span:first-child { color: #de5656; opacity: .2; top: 64%; left: 3%; -webkit-animation-duration: 18.8s; -moz-animation-duration: 18.8s; animation-duration: 18.8s; -webkit-animation-delay: -10.7s; -moz-animation-delay: -10.7s; animation-delay: -10.7s; -webkit-transform-origin: 14vw -22vh; -moz-transform-origin: 14vw -22vh; transform-origin: 14vw -22vh; -webkit-box-shadow: 100vmin 0 20.5259430347vmin currentColor; box-shadow:100vmin 0 20.5259430347vmin currentColor}
+
+.background_background__3Oeal > span:nth-child(2) { color: #de5656; opacity: .2; top: 24%; left: 85%; -webkit-animation-duration: 26.5s; -moz-animation-duration: 26.5s; animation-duration: 26.5s; -webkit-animation-delay: -3.1s; -moz-animation-delay: -3.1s; animation-delay: -3.1s; -webkit-transform-origin: -1vw -14vh; -moz-transform-origin: -1vw -14vh; transform-origin: -1vw -14vh; -webkit-box-shadow: 100vmin 0 36.2934581027vmin currentColor; box-shadow:100vmin 0 36.2934581027vmin currentColor}
+
+.background_background__3Oeal > span:nth-child(3) { color: #e54b4b; opacity: .2; top: 41%; left: 38%; -webkit-animation-duration: 26.3s; -moz-animation-duration: 26.3s; animation-duration: 26.3s; -webkit-animation-delay: -9.8s; -moz-animation-delay: -9.8s; animation-delay: -9.8s; -webkit-transform-origin: -5vw -21vh; -moz-transform-origin: -5vw -21vh; transform-origin: -5vw -21vh; -webkit-box-shadow: -100vmin 0 21.6771071789vmin currentColor; box-shadow:-100vmin 0 21.6771071789vmin currentColor}
+
+.background_background__3Oeal > span:nth-child(4) { color: #e54b4b; opacity: .2; top: 31%; left: 36%; -webkit-animation-duration: 32.4s; -moz-animation-duration: 32.4s; animation-duration: 32.4s; -webkit-animation-delay: -3.9s; -moz-animation-delay: -3.9s; animation-delay: -3.9s; -webkit-transform-origin: -24vw -5vh; -moz-transform-origin: -24vw -5vh; transform-origin: -24vw -5vh; -webkit-box-shadow: -100vmin 0 16.8646404307vmin currentColor; box-shadow:-100vmin 0 16.8646404307vmin currentColor}
+
+.background_background__3Oeal > span:nth-child(5) { color: #e54b4b; opacity: .2; top: 82%; left: 36%; -webkit-animation-duration: 30.6s; -moz-animation-duration: 30.6s; animation-duration: 30.6s; -webkit-animation-delay: -2.6s; -moz-animation-delay: -2.6s; animation-delay: -2.6s; -webkit-transform-origin: -7vw -4vh; -moz-transform-origin: -7vw -4vh; transform-origin: -7vw -4vh; -webkit-box-shadow: 100vmin 0 24.5628275968vmin currentColor; box-shadow:100vmin 0 24.5628275968vmin currentColor}
+
+.background_background__3Oeal > span:nth-child(6) { color: #e54b4b; opacity: .2; top: 69%; left: 33%; -webkit-animation-duration: 16.9s; -moz-animation-duration: 16.9s; animation-duration: 16.9s; -webkit-animation-delay: -22.3s; -moz-animation-delay: -22.3s; animation-delay: -22.3s; -webkit-transform-origin: 19vw 0; -moz-transform-origin: 19vw 0; transform-origin: 19vw 0; -webkit-box-shadow: -100vmin 0 30.1798673544vmin currentColor; box-shadow:-100vmin 0 30.1798673544vmin currentColor}
+
+.background_background__3Oeal > span:nth-child(7) { color: #de5656; opacity: .2; top: 5%; left: 35%; -webkit-animation-duration: 13s; -moz-animation-duration: 13s; animation-duration: 13s; -webkit-animation-delay: -2.4s; -moz-animation-delay: -2.4s; animation-delay: -2.4s; -webkit-transform-origin: 12vw 23vh; -moz-transform-origin: 12vw 23vh; transform-origin: 12vw 23vh; -webkit-box-shadow: 100vmin 0 18.4708847196vmin currentColor; box-shadow:100vmin 0 18.4708847196vmin currentColor}
+
+.background_background__3Oeal > span:nth-child(8) { color: #e54b4b; opacity: .2; top: 9%; left: 60%; -webkit-animation-duration: 31.5s; -moz-animation-duration: 31.5s; animation-duration: 31.5s; -webkit-animation-delay: -29.6s; -moz-animation-delay: -29.6s; animation-delay: -29.6s; -webkit-transform-origin: -16vw -24vh; -moz-transform-origin: -16vw -24vh; transform-origin: -16vw -24vh; -webkit-box-shadow: 100vmin 0 33.2981169125vmin currentColor; box-shadow:100vmin 0 33.2981169125vmin currentColor}
+
+.background_background__3Oeal > span:nth-child(9) { color: #e54b4b; opacity: .2; top: 100%; left: 63%; -webkit-animation-duration: 30.4s; -moz-animation-duration: 30.4s; animation-duration: 30.4s; -webkit-animation-delay: -2.9s; -moz-animation-delay: -2.9s; animation-delay: -2.9s; -webkit-transform-origin: -5vw 14vh; -moz-transform-origin: -5vw 14vh; transform-origin: -5vw 14vh; -webkit-box-shadow: -100vmin 0 28.9639176573vmin currentColor; box-shadow:-100vmin 0 28.9639176573vmin currentColor}
+
+.background_background__3Oeal > span:nth-child(10) { color: #e54b4b; opacity: .2; top: 15%; left: 30%; -webkit-animation-duration: 29.4s; -moz-animation-duration: 29.4s; animation-duration: 29.4s; -webkit-animation-delay: -7.4s; -moz-animation-delay: -7.4s; animation-delay: -7.4s; -webkit-transform-origin: -16vw -16vh; -moz-transform-origin: -16vw -16vh; transform-origin: -16vw -16vh; -webkit-box-shadow: -100vmin 0 20.9210912688vmin currentColor; box-shadow:-100vmin 0 20.9210912688vmin currentColor}
+
+@-webkit-keyframes background_move__307V1 { to {-webkit-transform: translateZ(1px) rotate(1turn); transform:translateZ(1px) rotate(1turn)}}
+@-moz-keyframes background_move__307V1 { to { -moz-transform: translateZ(1px) rotate(1turn); transform:translateZ(1px) rotate(1turn)}}
+@keyframes background_move__307V1 { to {-webkit-transform: translateZ(1px) rotate(1turn); -moz-transform: translateZ(1px) rotate(1turn); transform: translateZ(1px) rotate(1turn)}}
+
+/* 2 */
+.login-box svg { width: 100%; height: 120%; position:fixed; bottom:30%; z-index: 1;}
 

@@ -1,4 +1,5 @@
 import { loadDataTable } from "../common/datatable-handler.js";
+import { loadLessonApartSelect } from "../common/search-filters.js";
 
 const PageState = {
     selectedApartId: null,
@@ -7,7 +8,7 @@ const PageState = {
 document.addEventListener("DOMContentLoaded", async () => {
     initYearMonthSearch();
     await initSearchAddressCascader();
-    await reloadApartSelect();
+    fillSelect("search-target-apart", [], { placeholder: "아파트 선택", placeholderValue: "-" });
     bindSearchEvents();
     reloadConfirmedTable();
 });
@@ -37,13 +38,11 @@ async function initSearchAddressCascader() {
     $id("search-target-depth1")?.addEventListener("change", async () => {
         const addressId = toNumOrNull(getVal("search-target-depth1"));
         await loadAddress1Select(addressId, "search-target-depth2", { placeholder: "전체", placeholderValue: "-" });
-        await reloadApartSelect();
-        reloadConfirmedTable(true);
     });
 
+    // 시군구 선택 시 해당 지역의 아파트 목록으로 갱신
     $id("search-target-depth2")?.addEventListener("change", async () => {
         await reloadApartSelect();
-        reloadConfirmedTable(true);
     });
 }
 
@@ -70,15 +69,6 @@ function bindSearchEvents() {
         if (e.key !== "Enter") return;
         e.preventDefault();
         await runSearch();
-    });
-
-    ["search-year", "search-month", "search-target-confirmed", "search-target-apart"].forEach((id) => {
-        $id(id)?.addEventListener("change", () => {
-            if (id === "search-target-apart") {
-                PageState.selectedApartId = toNumOrNull(getVal("search-target-apart"));
-            }
-            reloadConfirmedTable(true);
-        });
     });
 }
 
@@ -230,37 +220,14 @@ function textColumn(data, title, width, formatter = null) {
 
 async function reloadApartSelect() {
     const previousApartId = getVal("search-target-apart");
-    const params = new URLSearchParams({
-        draw: "1",
-        start: "0",
-        length: "200",
-    });
-
-    const keyword = getVal("target-text");
-    const addressId = getVal("search-target-depth1");
-    const addressId1 = getVal("search-target-depth2");
     const confirmed = getVal("search-target-confirmed");
 
-    if (keyword) params.set("search_NAME_LIKE", keyword);
-    if (addressId && addressId !== "-") params.set("search_ADDRESS_ID_IS", addressId);
-    if (addressId1 && addressId1 !== "-") params.set("search_ADDRESS1_ID_IS", addressId1);
-    if (confirmed !== "-") params.set("search_CONFIRMED_IS", confirmed);
+    const selectedApartId = await loadLessonApartSelect({
+        extraParams: confirmed !== "-" ? { search_CONFIRMED_IS: confirmed } : {},
+        previousValue: previousApartId,
+    });
 
-    const resp = await fetchJson(`/api/lessons/confirmed/lesson?${params.toString()}`);
-    const items = normalizeList(resp).map((item) => ({
-        id: item.apartId,
-        name: item.apartName,
-    }));
-
-    fillSelect("search-target-apart", items, { placeholder: "아파트 선택", placeholderValue: "-" });
-
-    if (previousApartId && items.some((item) => String(item.id) === String(previousApartId))) {
-        setVal("search-target-apart", previousApartId);
-        PageState.selectedApartId = toNumOrNull(previousApartId);
-        return;
-    }
-
-    PageState.selectedApartId = null;
+    PageState.selectedApartId = selectedApartId;
 }
 
 async function loadAddressSelect(selectId, options = {}) {

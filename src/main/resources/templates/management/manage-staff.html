@@ -22,14 +22,14 @@
 
         <!-- custom css  -->
         <link href="/css/management.css" rel="stylesheet" type="text/css" />
-        <link href="/css/gird24-system.css" rel="stylesheet" type="text/css" />
     </th:block>
 
     <!-- content block -->
     <th:block th:fragment="pageContent">
+        <th:block th:replace="~{partials/mobile-not-supported-notice :: mobile-not-supported-notice('manage-staff-mobile-notice')}"></th:block>
         <!-- 여기에 페이지 본문 내용을 넣습니다. -->
         <!-- row -->
-        <div class="row">
+        <div class="row management-mobile-notice-target">
 
             <!-- col-->
             <div class="col-12 mobile-p0 m-0">
@@ -40,47 +40,42 @@
                         <form>
                             <!-- top -->
                             <div class="manage-data manage-bottom">
-                                <div class="grid-24">
-                                    <div class="row">
-                                        <!-- 버튼 -->
-                                        <div class="col-24 col-sm-5 col-lg-4 col-xl-3">
-                                            <button type="button" class="btn btn-primary management-btn mb-2" data-bs-toggle="modal" data-bs-target="#user-modal">
-                                                <i class="ri-add-circle-line me-1"></i> 직원추가
-                                            </button>
-                                        </div><!--//버튼 -->
+                                <div class="row g-2">
+                                    <!-- 버튼 -->
+                                    <div class="col-12 col-md-auto">
+                                        <button type="button" class="btn btn-primary management-btn mb-2" data-bs-toggle="modal" data-bs-target="#user-modal">
+                                            <i class="ri-add-circle-line me-1"></i> 직원추가
+                                        </button>
+                                    </div><!--//버튼 -->
 
-                                        <!-- 검색영역 -->
-                                        <div class="col-sm-19 col-lg-20 col-xl-21">
-                                            <div class="grid-24">
-                                                <div class="row justify-content-end">
-                                                    <!-- Role영역 -->
-                                                    <div class="col-sm-7 col-md-6 col-lg-4 col-xl-3 col-xxxl-3 mb-2 selectbox-pe-0">
-                                                        <div class="input-group d-flex align-items-center">
-                                                            <h5 class="mb-0 me-2">직책</h5>
-                                                            <select class="form-select" id="search-target" aria-label="">
-                                                            </select>
-                                                        </div>
-                                                    </div><!--// Role영역 -->
+                                    <!-- 검색영역 -->
+                                    <div class="col-12 col-md">
+                                        <div class="row g-2 justify-content-md-end">
+                                            <!-- Role영역 -->
+                                            <div class="col-6 col-sm-4 col-lg-3 col-xl-2 mb-2 selectbox-pe-0">
+                                                <div class="input-group d-flex align-items-center">
+                                                    <h5 class="mb-0 me-2">직책</h5>
+                                                    <select class="form-select" id="search-target" aria-label="">
+                                                    </select>
+                                                </div>
+                                            </div><!--// Role영역 -->
 
-                                                    <!-- 검색 -->
-                                                    <div class="col-sm-17 col-md-17 col-lg-14 col-xl-10 col-xxxl-8 mb-2">
-                                                        <div class="input-group">
-                                                            <input type="text" id="target-text" class="form-control w-33"
-                                                                   placeholder="이름 검색">
-                                                            <button type="button" class="btn btn-primary border-primary" id="btn-search">
-                                                                <i class="ri-search-line me-1"></i> 검색
-                                                            </button>
-                                                            <button type="button" class="btn btn-soft-dark shadow-none ms-1" id="btn-reset">
-                                                                <i class="ri-loop-left-fill me-1"></i> <span>초기화</span>
-                                                            </button>
-                                                        </div>
-                                                    </div><!--// 검색 -->
-                                                </div><!--//row -->
-                                            </div>
-                                        </div><!--// 검색영역 -->
-
-                                    </div><!--//row -->
-                                </div>
+                                            <!-- 검색 -->
+                                            <div class="col-12 col-sm-8 col-lg-6 col-xl-4 mb-2">
+                                                <div class="input-group">
+                                                    <input type="text" id="target-text" class="form-control w-33"
+                                                           placeholder="이름 검색">
+                                                    <button type="button" class="btn btn-primary border-primary" id="btn-search">
+                                                        <i class="ri-search-line me-1"></i> 검색
+                                                    </button>
+                                                    <button type="button" class="btn btn-soft-dark shadow-none ms-1" id="btn-reset">
+                                                        <i class="ri-loop-left-fill me-1"></i> <span>초기화</span>
+                                                    </button>
+                                                </div>
+                                            </div><!--// 검색 -->
+                                        </div><!--//row -->
+                                    </div><!--// 검색영역 -->
+                                </div><!--//row -->
                             </div><!--//top -->
 
                             <!-- table #dataTable - DataTable 로드 -->

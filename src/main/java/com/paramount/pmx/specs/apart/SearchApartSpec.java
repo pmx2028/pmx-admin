@@ -20,7 +20,9 @@ public class SearchApartSpec {
 
         ADDRESS_ID_IS("addressId"),
         ADDRESS1_ID_IS("addressId1"),
+        ACTIVATED_IS("activated"),
         NAME_LIKE("name")
+
         ;
         private final String value;
     }
@@ -82,6 +84,9 @@ public class SearchApartSpec {
                         break;
                     case ADDRESS1_ID_IS:
                         predicate.add(builder.equal(root.get("addressId1"), keyValue));
+                        break;
+                    case ACTIVATED_IS:
+                        predicate.add(builder.equal(root.get("activated"), keyValue));
                         break;
                     case NAME_LIKE:
                         predicate.add(builder.like(

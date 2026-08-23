@@ -1,0 +1,25 @@
+<!--
+  검색영역 공통 fragment - 지역/시군구 select (표준 Bootstrap 12-컬럼 그리드)
+  다른 검색화면(apart, order, member, lesson ...)에서도 재사용 가능
+  사용법:
+    <div th:replace="~{partials/search-address-filters :: search-address-filters}"></div>
+    <div th:replace="~{partials/search-address-filters :: search-address-filters('col-6 col-sm-4 col-lg-3 col-xl-2', 'col-6 col-sm-4 col-lg-3 col-xl-2')}"></div>
+-->
+<th:block th:fragment="search-address-filters(depth1ColClass, depth2ColClass)">
+    <!-- 지역영역 -->
+    <div th:class="${(depth1ColClass ?: 'col-6 col-sm-4 col-lg-3 col-xl-2') + ' mb-2 selectbox-pe-0'}">
+        <div class="input-group d-flex align-items-center">
+            <h5 class="mb-0 me-2">지역</h5>
+            <select class="form-select" id="search-target-depth1" aria-label="">
+            </select>
+        </div>
+    </div><!--// 지역영역 -->
+    <!-- 시군영역 -->
+    <div th:class="${(depth2ColClass ?: 'col-6 col-sm-4 col-lg-3 col-xl-2') + ' mb-2 selectbox-pe-0'}">
+        <div class="input-group d-flex align-items-center">
+            <h5 class="mb-0 me-2">시군구</h5>
+            <select class="form-select" id="search-target-depth2" aria-label="">
+            </select>
+        </div>
+    </div><!--// 시군영역 -->
+</th:block>

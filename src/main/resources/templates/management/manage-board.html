@@ -25,9 +25,10 @@
 
     <!-- content block -->
     <th:block th:fragment="pageContent">
+        <th:block th:replace="~{partials/mobile-not-supported-notice :: mobile-not-supported-notice('manage-board-mobile-notice')}"></th:block>
         <!-- 여기에 페이지 본문 내용을 넣습니다. -->
         <!-- row -->
-        <div class="row">
+        <div class="row management-mobile-notice-target">
             <!-- col-->
             <div class="col-12 mobile-p0">
                 <!-- card -->

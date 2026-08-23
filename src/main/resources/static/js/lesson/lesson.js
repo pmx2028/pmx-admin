@@ -1,4 +1,5 @@
 import { loadDataTable } from "../common/datatable-handler.js";
+import { loadLessonApartSelect } from "../common/search-filters.js";
 
 const PageState = {
     activeTab: "gxtuni",
@@ -35,7 +36,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     initYearMonthSearch();
     applySearchParamsFromUrl();
     await initSearchAddressCascader();
-    await reloadApartSelect();
+    fillSelect("search-target-apart", [], { placeholder: "아파트 선택", placeholderValue: "-" });
     bindSearchEvents();
     bindTabEvents();
     bindBulkSaveEvent();
@@ -642,43 +643,27 @@ async function initSearchAddressCascader() {
         const addressId = toNumOrNull(getVal("search-target-depth1"));
         await loadAddress1Select(addressId, "search-target-depth2", { placeholder: "전체", placeholderValue: "-" });
     });
+
+    // 시군구 선택 시 해당 지역의 아파트 목록으로 갱신
+    $id("search-target-depth2")?.addEventListener("change", async () => {
+        await reloadApartSelect();
+    });
 }
 
 async function reloadApartSelect() {
     const previousApartId = getVal("search-target-apart") !== "-"
         ? getVal("search-target-apart")
         : PageState.selectedApartId;
-    const params = new URLSearchParams({
-        draw: "1",
-        start: "0",
-        length: "200",
-        search_YEAR_IS: getVal("search-year"),
-        search_MONTH_IS: getVal("search-month"),
+
+    const selectedApartId = await loadLessonApartSelect({
+        extraParams: {
+            search_YEAR_IS: getVal("search-year"),
+            search_MONTH_IS: getVal("search-month"),
+        },
+        previousValue: previousApartId,
     });
 
-    const keyword = getVal("target-text");
-    const addressId = getVal("search-target-depth1");
-    const addressId1 = getVal("search-target-depth2");
-
-    if (keyword) params.set("search_NAME_LIKE", keyword);
-    if (addressId && addressId !== "-") params.set("search_ADDRESS_ID_IS", addressId);
-    if (addressId1 && addressId1 !== "-") params.set("search_ADDRESS1_ID_IS", addressId1);
-
-    const resp = await fetchJson(`/api/lessons/confirmed/lesson?${params.toString()}`);
-    const items = normalizeList(resp).map((item) => ({
-        id: item.apartId,
-        name: item.apartName,
-    }));
-
-    fillSelect("search-target-apart", items, { placeholder: "아파트 선택", placeholderValue: "-" });
-
-    if (previousApartId && items.some((item) => String(item.id) === String(previousApartId))) {
-        setVal("search-target-apart", previousApartId);
-        PageState.selectedApartId = toNumOrNull(previousApartId);
-        return;
-    }
-
-    PageState.selectedApartId = null;
+    PageState.selectedApartId = selectedApartId;
 }
 
 async function loadCategories() {

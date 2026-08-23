@@ -1,4 +1,5 @@
 import { loadDataTable } from "../common/datatable-handler.js";
+import { fillSelect, normalizeList, loadAddressSelect, loadAddress1Select } from "../common/search-filters.js";
 
 const MemberModalState = {
     mode: "create",
@@ -9,11 +10,6 @@ let isSubmitting = false;
 
 document.addEventListener("DOMContentLoaded", async () => {
     await initSearchAddressCascader();
-    await reloadApartSelect("apartId", {
-        placeholder: "아파트를 선택해 주세요",
-        placeholderValue: "-",
-        useSearchFilters: false,
-    });
 
     reloadMemberTable("memberDataTable");
 
@@ -232,14 +228,14 @@ function getMemberTableColumns() {
 async function initSearchAddressCascader() {
     await loadAddressSelect("search-target-depth1", { placeholder: "전체", placeholderValue: "-" });
     fillSelect("search-target-depth2", [], { placeholder: "전체", placeholderValue: "-" });
-    await reloadApartSelect("search-target-apart", { placeholder: "아파트 선택", placeholderValue: "-" });
+    fillSelect("search-target-apart", [], { placeholder: "아파트 선택", placeholderValue: "-" });
 
     $id("search-target-depth1")?.addEventListener("change", async () => {
         const addressId = toNumOrNull(getVal("search-target-depth1"));
         await loadAddress1Select(addressId, "search-target-depth2", { placeholder: "전체", placeholderValue: "-" });
-        await reloadApartSelect("search-target-apart", { placeholder: "아파트 선택", placeholderValue: "-" });
     });
 
+    // 시군구 선택 시 해당 지역의 아파트 목록으로 갱신
     $id("search-target-depth2")?.addEventListener("change", async () => {
         await reloadApartSelect("search-target-apart", { placeholder: "아파트 선택", placeholderValue: "-" });
     });
@@ -275,23 +271,6 @@ async function reloadApartSelect(selectId = "search-target-apart", options = {})
     if (previousApartId && items.some((item) => same(item.id, previousApartId))) {
         setVal(selectId, previousApartId);
     }
-}
-
-async function loadAddressSelect(selectId = "search-target-depth1", options = {}) {
-    const resp = await fetchJson("/api/address");
-    const items = normalizeList(resp, "address");
-    fillSelect(selectId, items, { placeholder: "전체", placeholderValue: "-", ...options });
-}
-
-async function loadAddress1Select(addressId, selectId = "search-target-depth2", options = {}) {
-    if (!addressId) {
-        fillSelect(selectId, [], { placeholder: "전체", placeholderValue: "-", ...options });
-        return;
-    }
-
-    const resp = await fetchJson(`/api/address/${addressId}/`);
-    const items = normalizeList(resp, "address");
-    fillSelect(selectId, items, { placeholder: "전체", placeholderValue: "-", ...options });
 }
 
 async function openCreateModal() {
@@ -558,33 +537,6 @@ function getCsrf() {
     const token = document.querySelector('meta[name="_csrf"]')?.getAttribute("content");
     const header = document.querySelector('meta[name="_csrf_header"]')?.getAttribute("content") || "X-CSRF-TOKEN";
     return token ? { header, token } : null;
-}
-
-function normalizeList(resp, key) {
-    const data = resp?.data?.[key] ?? resp?.data ?? [];
-    if (!Array.isArray(data)) return [];
-    return data.map((item) => ({
-        id: item.id ?? item.value ?? item.key,
-        name: item.name ?? item.compName ?? item.title ?? String(item.id ?? ""),
-    }));
-}
-
-function fillSelect(selectId, items, { placeholder = "전체", placeholderValue = "-" } = {}) {
-    const sel = $id(selectId);
-    if (!sel) return;
-
-    sel.innerHTML = "";
-    const opt0 = document.createElement("option");
-    opt0.value = placeholderValue;
-    opt0.textContent = placeholder;
-    sel.appendChild(opt0);
-
-    (items || []).forEach((item) => {
-        const opt = document.createElement("option");
-        opt.value = String(item.id);
-        opt.textContent = String(item.name);
-        sel.appendChild(opt);
-    });
 }
 
 function resetMemberModal() {

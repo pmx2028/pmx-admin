@@ -1,4 +1,5 @@
 import { loadDataTable } from "../common/datatable-handler.js";
+import { initSearchAddressCascader } from "../common/search-filters.js";
 
 const PageState = {
     selectedApartId: null,
@@ -17,6 +18,7 @@ const PageState = {
 };
 
 document.addEventListener("DOMContentLoaded", async () => {
+    await initSearchAddressCascader();
     await loadCategoryCodes();
     await loadUserRoles();
     reloadApartTable();
@@ -44,6 +46,8 @@ function bindSearchEvents() {
     searchBtn?.addEventListener("click", runSearch);
     resetBtn?.addEventListener("click", () => {
         if (searchInput) searchInput.value = "";
+        $id("search-target-depth1").value = "-";
+        fillSelect("search-target-depth2", [], { placeholder: "전체", placeholderValue: "-" });
         runSearch();
     });
     searchInput?.addEventListener("keydown", (e) => {
@@ -177,7 +181,15 @@ function reloadApartTable(resetPage = false) {
         getExtraDataFn: () => {
             const params = {};
             const keyword = $id("apart-search-text")?.value?.trim() ?? "";
+            const addressVal = $id("search-target-depth1")?.value ?? "-";
+            const address1Val = $id("search-target-depth2")?.value ?? "-";
             if (keyword) params["search_NAME_LIKE"] = keyword;
+            if (addressVal && addressVal !== "-") {
+                params["search_ADDRESS_ID_IS"] = Number(addressVal);
+            }
+            if (address1Val && address1Val !== "-") {
+                params["search_ADDRESS1_ID_IS"] = Number(address1Val);
+            }
             return params;
         },
         enableOrdering: false,

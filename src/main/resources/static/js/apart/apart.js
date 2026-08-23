@@ -1,6 +1,13 @@
 // /js/management/member.js
 import { loadDataTable } from "../common/datatable-handler.js";
 import { initCoverFileUpload } from "../management/management-utils.js";
+import {
+    fillSelect,
+    normalizeList,
+    loadAddressSelect,
+    loadAddress1Select,
+    initSearchAddressCascader,
+} from "../common/search-filters.js";
 
 /* =========================
  * 전역 상태 (생성/수정 모드)
@@ -41,6 +48,7 @@ function setSubmitting(on) {
 document.addEventListener("DOMContentLoaded", async () => {
     // 검색용
     await initSearchAddressCascader();
+    initSearchActivatedSelect();
 
     // 아파트 목록 테이블 초기 로드
     reloadApartfTable("apartDataTable");
@@ -89,6 +97,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         resetBtn.addEventListener("click", () => {
             $id("search-target-depth1").value = "-";
             fillSelect("search-target-depth2", [], { placeholder: "전체", placeholderValue: "-" });
+            $id("search-target-activatd").value = "-";
             $id("target-text").value = "";
             runSearch();
         });
@@ -198,6 +207,7 @@ function reloadApartfTable(tableId) {
             const nameKeyword = $id("target-text")?.value?.trim() ?? "";
             const addressVal = $id("search-target-depth1")?.value ?? "-";
             const address1Val = $id("search-target-depth2")?.value ?? "-";
+            const activatedVal = $id("search-target-activatd")?.value ?? "-";
             // 이름
             if (nameKeyword) params["search_NAME_LIKE"] = nameKeyword;
             //  지역
@@ -207,6 +217,10 @@ function reloadApartfTable(tableId) {
             //시군구
             if (address1Val && address1Val !== "-") {
                 params["search_ADDRESS1_ID_IS"] = Number(address1Val);
+            }
+            // 센터운영
+            if (activatedVal && activatedVal !== "-") {
+                params["search_ACTIVATED_IS"] = Number(activatedVal);
             }
             return params;
         },
@@ -223,35 +237,6 @@ function reloadApartfTable(tableId) {
 /* =========================
  * RolePermissionController 연동
  * ========================= */
-function fillSelect(selectId, items, { placeholder = "전체", placeholderValue = "-" } = {}) {
-    const sel = $id(selectId);
-    if (!sel) return;
-    sel.innerHTML = "";
-    const opt0 = document.createElement("option");
-    opt0.value = placeholderValue;
-    opt0.textContent = placeholder;
-    sel.appendChild(opt0);
-    (items || []).forEach((item) => {
-        const opt = document.createElement("option");
-        opt.value = String(item.id);
-        opt.textContent = String(item.name);
-        sel.appendChild(opt);
-    });
-}
-
-function normalizeList(resp, key) {
-    const data = resp?.data?.[key] ?? resp?.data ?? [];
-    // console.log(data);
-    if (!Array.isArray(data)) return [];
-    return data.map((x) => ({
-        id: x.id ?? x.value ?? x.key,
-        name: x.name ?? x.compName ?? x.title ?? String(x.id ?? ""),
-        type: x.type,
-        active: x.active,
-        virtual: x.virtual
-    }));
-}
-
 async function loadRole(selectId) {
     const resp = await fetchJson("/api/roles");
     const items = normalizeList(resp, "roles");
@@ -378,7 +363,7 @@ function buildApartCreatePayloadFromModal_Create() {
     const scrGolfCnt = getVal("scrGolfCnt");
 
     if (!name) throw new Error("아파트명을 입력해 주세요.");
-    if (addressId == null) throw new Error("행정구역을 선택해 주세요.");
+    if (addressId == null) throw new Error("지역을 선택해 주세요.");
     if (addressId1 == null) throw new Error("시도군을 선택해 주세요.");
 
     return {
@@ -413,7 +398,7 @@ function buildApartUpdatePayloadFromModal_Edit() {
     const scrGolfCnt = getVal("scrGolfCnt");
 
     if (!name) throw new Error("아파트명을 입력해 주세요.");
-    if (addressId == null) throw new Error("행정구역을 선택해 주세요.");
+    if (addressId == null) throw new Error("지역을 선택해 주세요.");
     if (addressId1 == null) throw new Error("시도군을 선택해 주세요.");
 
     const dto = {
@@ -622,7 +607,7 @@ function getApartTableColumns() {
         },
         {
             data: "addressName",
-            title: "행정구역",
+            title: "지역",
             className: "data-txt",
             orderable: false,
             width: "9%",
@@ -708,7 +693,14 @@ function getApartTableColumns() {
             width: "10%",
             render: (data) => data ?? "-",
         },
-
+        {
+            data: "activated",
+            title: "상태",
+            className: "data-txt",
+            orderable: false,
+            width: "16%",
+            render: (data) => Number(data) === 1 ? "운영" : "미운영",
+        },
         {
             data: "btnActions",
             title: "작업",
@@ -784,28 +776,16 @@ function resetSelects(ids = []) {
     ids.forEach((sid) => fillSelect(sid, [], { placeholder: "선택", placeholderValue: "-" }));
 }
 
-async function initSearchAddressCascader() {
-    const selectedSearchAddress = getVal("search-target-depth1");
-    const selectedSearchAddress1 = getVal("search-target-depth2");
-
-    await loadAddressSelect("search-target-depth1", { placeholder: "전체", placeholderValue: "-" });
-    if (selectedSearchAddress && selectedSearchAddress !== "-") {
-        $id("search-target-depth1").value = selectedSearchAddress;
-        await loadAddress1Select(selectedSearchAddress, "search-target-depth2", { placeholder: "전체", placeholderValue: "-" });
-        $id("search-target-depth2").value = selectedSearchAddress1 || "-";
-    } else {
-        fillSelect("search-target-depth2", [], { placeholder: "전체", placeholderValue: "-" });
-    }
-
-    const searchAddress = $id("search-target-depth1");
-    if (searchAddress) searchAddress.onchange = async () => {
-        const addressId = toNumOrNull(getVal("search-target-depth1"));
-        await loadAddress1Select(addressId, "search-target-depth2", { placeholder: "전체", placeholderValue: "-" });
-    };
+// 센터운영 검색 셀렉트 초기화
+function initSearchActivatedSelect() {
+    fillSelect("search-target-activatd", [
+        { id: "1", name: "운영" },
+        { id: "0", name: "미운영" },
+    ], { placeholder: "전체", placeholderValue: "-" });
 }
 
 async function initModalAddressCascader() {
-    await loadAddressSelect("address", { placeholder: "행정구역을 선택해 주세요", placeholderValue: "-" });
+    await loadAddressSelect("address", { placeholder: "지역을 선택해 주세요", placeholderValue: "-" });
     fillSelect("address1", [], { placeholder: "시도군을 선택해 주세요", placeholderValue: "-" });
 
     const modalAddress = $id("address");
@@ -813,30 +793,6 @@ async function initModalAddressCascader() {
         const addressId = toNumOrNull(getVal("address"));
         await loadAddress1Select(addressId, "address1", { placeholder: "시도군을 선택해 주세요", placeholderValue: "-" });
     };
-}
-
-// 행정구역 조회
-async function loadAddressSelect(selectId = "search-target-depth1", options = {}) {
-    const resp = await fetchJson("/api/address");
-    const items = normalizeList(resp, "address").map(x => ({
-        id: x.id,
-        name: x.name // label: 지역명
-    }));
-    fillSelect(selectId, items, { placeholder: "행정구역을 선택해 주세요", placeholderValue: "-", ...options });
-}
-
-// 시도군 조회
-async function loadAddress1Select(addressId, selectId = "search-target-depth2", options = {}) {
-    if (!addressId) {
-        fillSelect(selectId, [], { placeholder: "전체", placeholderValue: "-", ...options });
-        return;
-    }
-    const resp = await fetchJson(`/api/address/${addressId}/`);
-    const items = normalizeList(resp, "address").map(x => ({
-        id: x.id,
-        name: x.name // label: 지역명
-    }));
-    fillSelect(selectId, items, { placeholder: "시군구를 선택해 주세요", placeholderValue: "-", ...options });
 }
 
 function initAssignDatePicker({ mode = "create", initialValue = null } = {}) {
