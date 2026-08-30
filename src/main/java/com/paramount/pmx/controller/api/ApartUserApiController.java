@@ -86,4 +86,11 @@ public class ApartUserApiController {
         ResponseDto responseDto = apartUserService.resignApartUser(apartUserId, date, userDetails);
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
+    @GetMapping("/userApart")
+    public ResponseEntity<ResponseDto> getApartUserList(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        ResponseDto responseDto = apartUserService.getUserApartList(userDetails);
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
+    }
 }

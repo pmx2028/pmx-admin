@@ -1,5 +1,7 @@
 // /js/common/search-filters.js
-// 검색영역(지역/시군구/아파트 등) 셀렉트 공통 로직 - 여러 페이지(apart, order, member, lesson ...)에서 재사용
+// 검색영역(지역/시군구/아파트) 공통 캐스케이딩 로직 - 여러 페이지(apart, order, member, lesson ...)에서 재사용
+// 지역 선택 -> 시군구 목록 조회, 시군구 선택 -> 아파트 목록 조회까지만 담당한다.
+// 각 화면은 select에 남아있는 선택값을 그대로 읽어서 검색 버튼 클릭 시 자체 검색을 실행한다.
 
 const $id = (id) => document.getElementById(id);
 const getVal = (id) => $id(id)?.value?.trim() ?? "";
@@ -70,68 +72,55 @@ export async function loadAddress1Select(addressId, selectId, options = {}) {
     fillSelect(selectId, items, { placeholder: "시군구를 선택해 주세요", placeholderValue: "-", ...options });
 }
 
-// 검색영역 지역/시군구 cascader 초기화
-// - 기존 선택값 유지, depth1 변경 시 depth2 목록 재조회
-export async function initSearchAddressCascader({
-    depth1Id = "search-target-depth1",
-    depth2Id = "search-target-depth2",
-} = {}) {
-    const selectedAddress = getVal(depth1Id);
-    const selectedAddress1 = getVal(depth2Id);
-
-    await loadAddressSelect(depth1Id, { placeholder: "전체", placeholderValue: "-" });
-    if (selectedAddress && selectedAddress !== "-") {
-        $id(depth1Id).value = selectedAddress;
-        await loadAddress1Select(selectedAddress, depth2Id, { placeholder: "전체", placeholderValue: "-" });
-        $id(depth2Id).value = selectedAddress1 || "-";
-    } else {
-        fillSelect(depth2Id, [], { placeholder: "전체", placeholderValue: "-" });
-    }
-
-    const depth1El = $id(depth1Id);
-    if (depth1El) {
-        depth1El.onchange = async () => {
-            const addressId = toNumOrNull(getVal(depth1Id));
-            await loadAddress1Select(addressId, depth2Id, { placeholder: "전체", placeholderValue: "-" });
-        };
-    }
-}
-
-// search-apart-filters 프래그먼트의 "아파트" select 조회
-// - 지역/시군구/검색어 + 페이지별 추가 파라메터(extraParams)로 강습 등록된 아파트 목록을 조회해 채움
-// - 기존 선택값이 목록에 남아있으면 유지, 없으면 null 반환
-export async function loadLessonApartSelect({
+// 아파트 select 조회 (범용) - 페이지마다 아파트 목록 API/응답 필드가 다를 수 있어 옵션으로 흡수한다.
+// - idKey/nameKey: 응답 아이템에서 select value/label로 쓸 필드명
+// - useAddressFilters: depth1Id/depth2Id 현재 선택값을 조회 조건으로 사용할지 여부
+export async function loadApartSelect({
     selectId = "search-target-apart",
     depth1Id = "search-target-depth1",
     depth2Id = "search-target-depth2",
-    keywordId = "target-text",
-    apiUrl = "/api/lessons/confirmed/lesson",
+    keywordId = null,
+    apiUrl = "/api/aparts",
+    idKey = "id",
+    nameKey = "name",
+    length = 500,
+    useAddressFilters = true,
     extraParams = {},
+    placeholder = "아파트 선택",
     previousValue = null,
 } = {}) {
+    if (!$id(selectId)) {
+        return null;
+    }
+
+    const resolvedExtraParams = typeof extraParams === "function" ? extraParams() : extraParams;
     const params = new URLSearchParams({
         draw: "1",
         start: "0",
-        length: "200",
-        ...extraParams,
+        length: String(length),
+        ...resolvedExtraParams,
     });
 
-    const keyword = getVal(keywordId);
-    const addressId = getVal(depth1Id);
-    const addressId1 = getVal(depth2Id);
+    if (useAddressFilters) {
+        const addressId = getVal(depth1Id);
+        const addressId1 = getVal(depth2Id);
+        if (addressId && addressId !== "-") params.set("search_ADDRESS_ID_IS", addressId);
+        if (addressId1 && addressId1 !== "-") params.set("search_ADDRESS1_ID_IS", addressId1);
+    }
 
-    if (keyword) params.set("search_NAME_LIKE", keyword);
-    if (addressId && addressId !== "-") params.set("search_ADDRESS_ID_IS", addressId);
-    if (addressId1 && addressId1 !== "-") params.set("search_ADDRESS1_ID_IS", addressId1);
+    if (keywordId) {
+        const keyword = getVal(keywordId);
+        if (keyword) params.set("search_NAME_LIKE", keyword);
+    }
 
     const resp = await fetchJson(`${apiUrl}?${params.toString()}`);
     const data = resp?.data ?? [];
     const items = (Array.isArray(data) ? data : []).map((item) => ({
-        id: item.apartId,
-        name: item.apartName,
+        id: item[idKey],
+        name: item[nameKey],
     }));
 
-    fillSelect(selectId, items, { placeholder: "아파트 선택", placeholderValue: "-" });
+    fillSelect(selectId, items, { placeholder, placeholderValue: "-" });
 
     const prevId = previousValue != null && previousValue !== "-" ? String(previousValue) : null;
     if (prevId && items.some((item) => String(item.id) === prevId)) {
@@ -139,4 +128,84 @@ export async function loadLessonApartSelect({
         return toNumOrNull(prevId);
     }
     return null;
+}
+
+// 검색영역 지역/시군구/아파트 캐스케이딩 초기화
+// - 지역(depth1) 변경 -> 시군구(depth2) 목록 재조회 (+ 아파트 select 초기화)
+// - 시군구(depth2) 변경 -> 아파트(apartId) 목록 재조회
+// - apartId에 해당하는 select가 페이지에 없으면 아파트 관련 동작은 전부 건너뜀
+// - onApartChange(selectedApartId)로 각 페이지의 PageState 등에 선택된 아파트 id를 동기화할 수 있음
+// - initialApartValue: 최초 진입시 미리 선택돼 있어야 하는 아파트 id (예: URL 쿼리파라미터로 넘어온 apartId)
+// - 지역(depth1) select 자체가 화면에 없으면(강사/매니저 - search-apart-filters.html 참고) 주소 필터 없이
+//   restrictedApartApiUrl(본인이 등록된 아파트만 반환)로 아파트 select를 바로 구성한다.
+export async function initSearchAddressCascader({
+    depth1Id = "search-target-depth1",
+    depth2Id = "search-target-depth2",
+    apartId = "search-target-apart",
+    apartOptions = {},
+    restrictedApartApiUrl = "/api/apart-user/userApart",
+    initialApartValue = null,
+    onApartChange = null,
+} = {}) {
+    const selectedAddress = getVal(depth1Id);
+    const selectedAddress1 = getVal(depth2Id);
+    const selectedApart = initialApartValue != null ? initialApartValue : getVal(apartId);
+    const hasApartSelect = Boolean($id(apartId));
+    const hasAddressSelect = Boolean($id(depth1Id));
+
+    if (hasAddressSelect) {
+        await loadAddressSelect(depth1Id, { placeholder: "전체", placeholderValue: "-" });
+        if (selectedAddress && selectedAddress !== "-") {
+            $id(depth1Id).value = selectedAddress;
+            await loadAddress1Select(selectedAddress, depth2Id, { placeholder: "전체", placeholderValue: "-" });
+            $id(depth2Id).value = selectedAddress1 || "-";
+        } else {
+            fillSelect(depth2Id, [], { placeholder: "전체", placeholderValue: "-" });
+        }
+    }
+
+    const resolvedApartOptions = hasAddressSelect
+        ? apartOptions
+        : {
+            apiUrl: restrictedApartApiUrl,
+            idKey: "id",
+            nameKey: "name",
+            useAddressFilters: false,
+            placeholder: apartOptions.placeholder ?? "아파트 선택",
+        };
+
+    const reloadApart = async (previousValue) => {
+        const selectedApartId = await loadApartSelect({
+            selectId: apartId,
+            depth1Id,
+            depth2Id,
+            previousValue,
+            ...resolvedApartOptions,
+        });
+        onApartChange?.(selectedApartId);
+        return selectedApartId;
+    };
+
+    if (hasApartSelect) {
+        await reloadApart(selectedApart);
+    }
+
+    const depth1El = $id(depth1Id);
+    if (depth1El) {
+        depth1El.onchange = async () => {
+            const addressId = toNumOrNull(getVal(depth1Id));
+            await loadAddress1Select(addressId, depth2Id, { placeholder: "전체", placeholderValue: "-" });
+            if (hasApartSelect) {
+                fillSelect(apartId, [], { placeholder: apartOptions.placeholder ?? "아파트 선택", placeholderValue: "-" });
+                onApartChange?.(null);
+            }
+        };
+    }
+
+    const depth2El = $id(depth2Id);
+    if (depth2El && hasApartSelect) {
+        depth2El.onchange = async () => {
+            await reloadApart(null);
+        };
+    }
 }

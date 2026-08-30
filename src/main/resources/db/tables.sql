@@ -353,8 +353,8 @@ create table orders
     order_name      varchar(200)                          not null comment '주문명',
     order_amount    int                                   not null comment '주문금액',
     discount_amount int         default 0                 not null comment '할인금액',
-    payment_amount  int                                   not null comment '최종 결제금액',
-    order_status    varchar(30) default 'READY'           not null comment 'READY, PAYMENT_PENDING, PAID, CANCELLED, REFUNDED',
+    amount          int                                   not null comment '최종 결제금액',
+    status          varchar(30) default 'READY'           not null comment 'READY, PAYMENT_PENDING, PAID, CANCELLED, PARTIAL_CANCELLED , REFUNDED , FAILED',
     ordered_at      datetime    default CURRENT_TIMESTAMP not null,
     created_at      datetime    default CURRENT_TIMESTAMP not null comment '생성일시',
     updated_at      datetime    default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP comment '최종 수정일시',
@@ -363,6 +363,9 @@ create table orders
 )
     comment '주문정보';
 
+create index idx_orders_apart_id
+    on orders (apart_id);
+
 create index idx_orders_lesson_id
     on orders (lesson_id);
 
@@ -370,92 +373,134 @@ create index idx_orders_member_id
     on orders (member_id);
 
 create index idx_orders_status
-    on orders (order_status);
-
-create table payment_cards
-(
-    id            bigint auto_increment
-        primary key,
-    member_id     bigint                               not null,
-    billing_key   varchar(200)                         not null,
-    card_company  varchar(30)                          null,
-    card_bin      varchar(8)                           null,
-    card_last4    varchar(4)                           null,
-    card_type     varchar(10)                          null,
-    is_default    tinyint(1) default 0                 not null,
-    is_deleted    tinyint(1) default 0                 not null,
-    registered_at datetime   default CURRENT_TIMESTAMP not null,
-    deleted_at    datetime                             null,
-    created_at    datetime   default CURRENT_TIMESTAMP not null,
-    updated_at    datetime   default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP,
-    constraint uq_payment_cards_billing_key
-        unique (billing_key)
-);
-
-create index idx_payment_cards_member
-    on payment_cards (member_id);
+    on orders (status);
 
 create table payment_methods
 (
-    id         bigint auto_increment
+    id                    bigint auto_increment
         primary key,
-    code       varchar(10)                          not null,
-    name       varchar(50)                          not null,
-    is_active  tinyint(1) default 1                 not null,
-    sort_order int        default 0                 not null,
-    created_at datetime   default CURRENT_TIMESTAMP not null,
-    updated_at datetime   default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP,
-    constraint code
-        unique (code)
-);
+    member_id             bigint                               not null,
+    method_type           varchar(10)                          not null comment 'CARD / ACCOUNT',
+    method                varchar(20)                          not null,
+    billing_key           varchar(300)                         not null,
+    customer_key          varchar(300)                         not null,
+    card_company          varchar(30)                          null,
+    card_number_masked    varchar(30)                          null,
+    card_type             varchar(20)                          null comment '신용/체크',
+    bank_code             varchar(20)                          null,
+    bank_name             varchar(50)                          null,
+    account_number_masked varchar(50)                          null,
+    account_holder_name   varchar(50)                          null,
+    activated             tinyint(1) default 1                 not null comment 'ACTIVE : 1 /INACTIVE : 2/DELETED : 0',
+    registered_at         datetime   default CURRENT_TIMESTAMP not null,
+    deleted_at            datetime                             null,
+    created_at            datetime   default CURRENT_TIMESTAMP not null,
+    updated_at            datetime   default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP
+)
+    comment '회원 결제수단';
+
+create index idx_payment_methods_billing_key
+    on payment_methods (billing_key);
+
+create index idx_payment_methods_member_id
+    on payment_methods (member_id);
+
+create table payment_transaction
+(
+    id              bigint auto_increment
+        primary key,
+    subscription_id bigint                             null,
+    order_id        bigint                             not null,
+    payment_id      bigint                             null,
+    attempt_no      int      default 1                 not null,
+    request_amount  int                                not null,
+    idempotency_key varchar(300)                       null,
+    status          varchar(20)                        not null comment 'READY/REQUESTING/SUCCESS/FAILED/TIMEOUT',
+    error_code      varchar(100)                       null,
+    error_message   varchar(500)                       null,
+    requested_at    datetime default CURRENT_TIMESTAMP not null,
+    completed_at    datetime                           null
+)
+    comment '자동결제 시도 이력';
+
+create table payment_cancels
+(
+    id                     bigint auto_increment
+        primary key,
+    payment_transaction_id bigint       not null,
+    cancel_reason          int          not null,
+    reason                 varchar(255) null,
+    status                 varchar(15)  not null comment 'REQUESTED/DONE/FAILED',
+    transaction_key        varchar(200) null,
+    requested_at           datetime     not null,
+    canceled_at            datetime     null,
+    fail_code              varchar(100) null,
+    fail_message           varchar(500) null,
+    constraint payment_cancels_ibfk_1
+        foreign key (payment_transaction_id) references payment_transaction (id)
+)
+    comment '취소 / 환불';
+
+create index payment_transaction_id
+    on payment_cancels (payment_transaction_id);
+
+create index idx_transaction_order_id
+    on payment_transaction (order_id);
+
+create index idx_transaction_subscription
+    on payment_transaction (subscription_id);
+
+create table payment_webhook_log
+(
+    id           bigint auto_increment
+        primary key,
+    event_type   varchar(50)          not null,
+    order_id     varchar(64)          null,
+    payment_key  varchar(200)         null,
+    raw_payload  json                 not null,
+    processed    tinyint(1) default 0 not null,
+    received_at  datetime             not null,
+    processed_at datetime             null
+)
+    comment '토스 웹훅 원본';
 
 create table payments
 (
-    id                bigint auto_increment
+    id            bigint auto_increment
         primary key,
-    order_id          bigint                                not null comment '주문 ID',
-    payment_method_id bigint                                not null,
-    payment_card_id   bigint                                null comment 'CARD 결제(빌링키 사용) 시에만 값 존재',
-    pg_company        varchar(30) default 'HECTO'           not null comment 'PG사',
-    mcht_id           varchar(100)                          null comment '상점 ID',
-    mcht_trd_no       varchar(64)                           not null comment '가맹점 거래번호 (요청 시 우리가 채번, 유일값)',
-    trd_no            varchar(64)                           null comment '헥토 발급 거래번호(TID) — 승인 후 채워짐',
-    payment_method    varchar(30)                           not null comment 'CARD, BANK, VBANK, MOBILE',
-    transaction_type  varchar(20)                           not null comment 'PAYMENT, CANCEL, PARTIAL_CANCEL',
-    payment_status    varchar(20)                           not null comment 'READY, IN_PROGRESS, DONE, FAILED, CANCELLED',
-    amount            int                                   not null comment '결제금액',
-    vact_bank_cd      varchar(10)                           null comment '가상계좌은행',
-    vact_no           varchar(30)                           null comment '가상계좌번호',
-    vact_in_dt        datetime                              null comment '입금기한',
-    pkt_hash          varchar(200)                          null comment '해쉬값',
-    requested_at      datetime                              not null,
-    trd_dt            varchar(8)                            null comment '헥토 응답 거래일자(YYYYMMDD), 원본 보관',
-    trd_tm            varchar(6)                            null comment '헥토 응답 거래시각(HHMMSS), 원본 보관',
-    approved_at       datetime                              null comment '승인일시',
-    result_code       varchar(50)                           null comment 'PG 결과코드',
-    result_message    varchar(500)                          null comment 'PG 결과메시지',
-    raw_response      json                                  null comment 'PG 응답 원본',
-    created_at        datetime    default CURRENT_TIMESTAMP not null comment '생성일시',
-    updated_at        datetime    default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP comment '최종 수정일시',
-    constraint mcht_trd_no
-        unique (mcht_trd_no),
-    constraint fk_payments_card
-        foreign key (payment_card_id) references payment_cards (id),
-    constraint fk_payments_method
-        foreign key (payment_method_id) references payment_methods (id),
-    constraint fk_payments_order
-        foreign key (order_id) references orders (id)
+    order_id      bigint                                not null comment '주문 ID',
+    member_id     bigint                                not null comment '회원 ID',
+    provider      varchar(20) default 'TOSS'            not null comment '결재회사',
+    payment_type  varchar(20)                           not null comment 'NORMAL , AUTO',
+    method        varchar(20)                           not null comment 'CARD , TRANSFER',
+    amount        int                                   not null comment '결제금액',
+    status        varchar(30)                           not null comment 'READY, PAYMENT_PENDING, PAID, CANCELLED, PARTIAL_CANCELLED , REFUNDED , FAILED',
+    payment_key   varchar(200)                          null,
+    toss_order_id varchar(64)                           null,
+    approved_at   datetime                              null,
+    requested_at  datetime                              null,
+    card_company  varchar(30)                           null,
+    card_number   varchar(30)                           null,
+    bank_code     varchar(20)                           null,
+    bank_name     varchar(50)                           null,
+    receipt_url   varchar(500)                          null,
+    fail_code     varchar(100)                          null,
+    fail_message  varchar(500)                          null,
+    created_at    datetime    default CURRENT_TIMESTAMP not null comment '생성일시',
+    updated_at    datetime    default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP comment '최종 수정일시',
+    constraint uk_payments_payment_key
+        unique (payment_key)
 )
     comment '결제정보';
 
-create index idx_payments_order
+create index idx_payments_member_id
+    on payments (member_id);
+
+create index idx_payments_order_id
     on payments (order_id);
 
 create index idx_payments_status
-    on payments (payment_status);
-
-create index idx_payments_trd_no
-    on payments (trd_no);
+    on payments (status);
 
 create table permissions
 (
@@ -483,6 +528,16 @@ create table persistent_logins_pmx
 )
     charset = utf8mb4;
 
+create table persistent_logins_pmxlife
+(
+    series    varchar(64) not null
+        primary key,
+    token     varchar(64) null,
+    username  varchar(64) null,
+    last_used varchar(64) null
+)
+    charset = utf8mb4;
+
 create table positions
 (
     id         bigint auto_increment
@@ -494,38 +549,6 @@ create table positions
     updated_at timestamp            not null
 )
     charset = utf8mb4;
-
-create table refunds
-(
-    id                 bigint auto_increment
-        primary key,
-    refund_no          varchar(50)                           not null comment '환불번호',
-    payment_id         bigint                                not null comment '결제 ID',
-    order_id           bigint                                not null comment '주문 ID',
-    member_id          bigint                                not null comment '회원 ID',
-    refund_amount      int                                   not null comment '환불금액',
-    refund_reason_code varchar(30)                           null comment '환불사유 코드',
-    refund_reason      varchar(500)                          null comment '환불사유',
-    refund_status      varchar(30) default 'REQUESTED'       not null comment 'REQUESTED, PROCESSING, COMPLETED, FAILED',
-    pg_cancel_id       varchar(100)                          null comment 'PG 취소 거래번호',
-    result_code        varchar(50)                           null,
-    result_message     varchar(500)                          null,
-    requested_at       datetime    default CURRENT_TIMESTAMP not null,
-    completed_at       datetime                              null,
-    requested_by       bigint                                null comment '환불 요청자 ID',
-    raw_response       json                                  null,
-    created_at         datetime    default CURRENT_TIMESTAMP not null comment '생성일시',
-    updated_at         datetime    default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP comment '최종 수정일시',
-    constraint uk_refunds_refund_no
-        unique (refund_no),
-    constraint fk_refunds_member
-        foreign key (member_id) references members (id),
-    constraint fk_refunds_order
-        foreign key (order_id) references orders (id),
-    constraint fk_refunds_payment
-        foreign key (payment_id) references payments (id)
-)
-    comment '환불정보';
 
 create table roles
 (
@@ -558,6 +581,33 @@ create table role_permissions
             on delete cascade
 )
     charset = utf8mb4;
+
+create table subscription
+(
+    id                bigint auto_increment
+        primary key,
+    member_id         bigint                       not null,
+    payment_method_id bigint                       not null,
+    lesson_id         bigint                       not null,
+    amount            int                          not null,
+    billing_cycle     varchar(10)                  not null,
+    billing_day       tinyint                      null,
+    next_billing_date date                         not null,
+    last_billing_date date                         null,
+    status            varchar(15) default 'ACTIVE' not null comment 'ACTIVE/PAUSED/CANCELLED',
+    fail_count        tinyint     default 0        not null,
+    start_date        date                         not null,
+    end_date          date                         null,
+    created_at        datetime                     not null,
+    updated_at        datetime                     not null
+)
+    comment '자동결제 계약';
+
+create index idx_subscription_member_id
+    on subscription (member_id);
+
+create index idx_subscription_next_billing
+    on subscription (status, next_billing_date);
 
 create table user_permissions
 (

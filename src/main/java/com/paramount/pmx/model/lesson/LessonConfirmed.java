@@ -51,6 +51,9 @@ public class LessonConfirmed {
     @Column
     private Long apartId;
 
+    @Column
+    private String lessonType;
+
     @Column(nullable = false)
     private Integer confirmed;
 

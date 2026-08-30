@@ -60,20 +60,9 @@
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="col-6 col-md-4 col-lg-auto selectbox-pe-0">
-                                        <div class="input-group d-flex align-items-center">
-                                            <h5 class="mb-0 me-2">확정여부</h5>
-                                            <select class="form-select" id="search-target-confirmed" aria-label="확정상태">
-                                                <option value="-">전체</option>
-                                                <option value="">미등록</option>
-                                                <option value="0">등록</option>
-                                                <option value="1">확정</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <!-- 지역/시군구/아파트 검색영역 (공통 fragment) -->
+
                                     <th:block th:replace="~{partials/search-apart-filters :: search-apart-filters}"></th:block>
-                                    <!-- 검색 -->
+
                                     <div class="col-12 col-sm-8 col-lg-6 col-xl-4 mb-2">
                                         <div class="input-group">
                                             <input type="text" id="target-text" class="form-control w-33"

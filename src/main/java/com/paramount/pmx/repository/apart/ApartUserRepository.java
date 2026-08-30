@@ -21,4 +21,6 @@ public interface ApartUserRepository extends JpaRepository<ApartUser, Long>, Jpa
     List<ApartUser> findByApartIdAndActivated(Long apartId, Integer activated);
 
     List<ApartUser> findByUserId(Long userId);
+
+    List<ApartUser> findByUserIdAndActivated(Long userId, Integer activated);
 }

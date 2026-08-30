@@ -1,21 +1,19 @@
 package com.paramount.pmx.service.lesson;
 
 import com.paramount.pmx.model.DatatableDto;
-import com.paramount.pmx.model.apart.Apart;
-import com.paramount.pmx.model.apart.ApartDto;
 import com.paramount.pmx.model.apart.ApartUser;
-import com.paramount.pmx.model.apart.ApartUserDto;
+import com.paramount.pmx.model.enums.CategoryCode;
 import com.paramount.pmx.model.enums.TimeCode;
-import com.paramount.pmx.model.lesson.*;
+import com.paramount.pmx.model.lesson.Lesson;
+import com.paramount.pmx.model.lesson.LessonConfirmed;
+import com.paramount.pmx.model.lesson.LessonConfirmedDto;
+import com.paramount.pmx.model.lesson.LessonDto;
 import com.paramount.pmx.model.response.Response;
 import com.paramount.pmx.model.response.ResponseDto;
-import com.paramount.pmx.repository.apart.ApartRepository;
 import com.paramount.pmx.repository.apart.ApartUserRepository;
 import com.paramount.pmx.repository.lesson.LessonConfirmedRepository;
 import com.paramount.pmx.repository.lesson.LessonRepository;
 import com.paramount.pmx.security.CustomUserDetails;
-import com.paramount.pmx.specs.apart.SearchApartSpec;
-import com.paramount.pmx.specs.apart.SearchApartUserSpec;
 import com.paramount.pmx.specs.lesson.SearchLessonConfirmedSpec;
 import com.paramount.pmx.specs.lesson.SearchLessonSpec;
 import jakarta.transaction.Transactional;
@@ -26,19 +24,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static com.paramount.pmx.model.lesson.LessonConfirmedDto.toDto;
-import static com.paramount.pmx.model.lesson.LessonDto.tohealthGolfList;
 
 @Service
 @RequiredArgsConstructor
@@ -78,7 +66,7 @@ public class LessonService {
         );
     }
 
-    //GX , 트리트니 리스트 조회
+    // golf / health 조회
     public ResponseDto getHealthGolfLessonList(Map<String, Object> requestParams, CustomUserDetails userDetails) {
         DatatableDto datatableDto = new DatatableDto(requestParams, Sort.unsorted(), SearchLessonSpec::getValidSortKey);
 
@@ -95,7 +83,7 @@ public class LessonService {
         );
 
         List<LessonDto> limitedResult = result.stream()
-                .map(row -> tohealthGolfList(row))
+                .map(row -> LessonDto.tohealthGolfList(row))
                 .limit(200)
                 .toList();
 
@@ -290,9 +278,7 @@ public class LessonService {
 
     @Transactional
     public ResponseDto createLesson(LessonDto reqDto, CustomUserDetails userDetails) {
-        //validateRequiredIds(reqDto);
-        //validateDuplicate(reqDto.getApartId(), reqDto.getUserId(), reqDto.getCategoryId1(), reqDto.getRoleId(), null);
-        Lesson lesson = Lesson.builder()
+       Lesson lesson = Lesson.builder()
                 .year(reqDto.getYear())
                 .month(reqDto.getMonth())
                 .apartId(reqDto.getApartId())
@@ -316,8 +302,6 @@ public class LessonService {
 
     @Transactional
     public ResponseDto updateLesson(Long lessonId, LessonDto reqDto, CustomUserDetails userDetails) {
-        //validateRequiredIds(reqDto);
-        //validateDuplicate(reqDto.getApartId(), reqDto.getUserId(), reqDto.getCategoryId1(), reqDto.getRoleId(), apartUserId);
 
         Lesson lesson = lessonRepository.findById(lessonId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 아파트 사용자가 존재하지 않습니다."));
@@ -360,23 +344,42 @@ public class LessonService {
         String year = parseString(getRequestValue(requestParams, "YEAR_IS", "year"));
         String month = parseString(getRequestValue(requestParams, "MONTH_IS", "month"));
         Long apartId = parseLong(getRequestValue(requestParams, "APART_ID_IS", "apartId"));
+        String lessonType = parseString(getRequestValue(requestParams, "LESSON_TYPE_IS", "lessonType"));
 
-        if (year == null || month == null || apartId == null) {
-            throw new IllegalArgumentException("연도, 월, 아파트 정보가 필요합니다.");
+        if (year == null || month == null || apartId == null || lessonType == null) {
+            throw new IllegalArgumentException("년, 월, 아파트 ,  강습 정보가 필요합니다.");
+        }
+        List<Lesson> lessonList = null;
+        Boolean lessonRegistered = false;
+        if (lessonType.equals("gxtuni")) {
+            List<Long> categoryIds = List.of(CategoryCode.GX.getCode(), CategoryCode.TUNI.getCode());
+            lessonList = lessonRepository.findByYearAndMonthAndApartIdAndCategoryIdIn(year, month, apartId , categoryIds);
+        } else if (lessonType.equals("health")) {
+            long categoryId = CategoryCode.HEALTH.getCode();;
+            lessonList = lessonRepository.findByYearAndMonthAndApartIdAndCategoryId(year, month, apartId , categoryId);
+        } else if (lessonType.equals("golf")) {
+            long categoryId = CategoryCode.GOLF.getCode();
+            lessonList = lessonRepository.findByYearAndMonthAndApartIdAndCategoryId(year, month, apartId , categoryId);
         }
 
-        List<LessonConfirmed> lessonConfirmedList = lessonConfirmedRepository.findByYearAndMonthAndApartId(year, month, apartId);
+        if (! lessonList.isEmpty()) {
+            lessonRegistered = true;
+        }
+
+        List<LessonConfirmed> lessonConfirmedList = lessonConfirmedRepository.findByYearAndMonthAndApartIdAndLessonType(year, month, apartId , lessonType);
         if (lessonConfirmedList.isEmpty()) {
             return Response.ok(LessonConfirmedDto.builder()
                     .id(null)
                     .year(year)
                     .month(month)
+                    .lessonType(lessonType)
                     .apartId(apartId)
                     .confirmed(null)
+                    .lessonRegistered(lessonRegistered)
                     .build());
         }
 
-        return Response.ok(LessonConfirmedDto.toDto(lessonConfirmedList.get(0)));
+        return Response.ok(LessonConfirmedDto.toDto(lessonConfirmedList.get(0),lessonRegistered));
     }
 
 
@@ -387,6 +390,7 @@ public class LessonService {
                 .year(reqDto.getYear())
                 .month(reqDto.getMonth())
                 .apartId(reqDto.getApartId())
+                .lessonType(reqDto.getLessonType())
                 .confirmed(reqDto.getConfirmed() == null ? 0 : reqDto.getConfirmed())
                 .activated(reqDto.getActivated() == null ? 1 : reqDto.getActivated())
                 .build();
@@ -416,45 +420,37 @@ public class LessonService {
         String year = parseString(getRequestValue(requestParams, "YEAR_IS", "year"));
         String month = parseString(getRequestValue(requestParams, "MONTH_IS", "month"));
         Long apartId = parseLong(getRequestValue(requestParams, "APART_ID_IS", "apartId"));
-        Object confirmedValue = getRequestValue(requestParams, "CONFIRMED_IS", "confirmed");
-        Long confirmed = parseLong(confirmedValue);
-        boolean unregistered = confirmedValue != null && parseString(confirmedValue).isBlank();
         Long addressId = parseLong(getRequestValue(requestParams, "ADDRESS_ID_IS", "addressId"));
         Long addressId1 = parseLong(getRequestValue(requestParams, "ADDRESS1_ID_IS", "addressId1"));
         String name = parseString(getRequestValue(requestParams, "NAME_LIKE", "name"));
 
-        if (year == null || month == null) {
+       if (year == null || month == null) {
             throw new IllegalArgumentException("연도, 월 정보가 필요합니다.");
         }
 
-        List<Map<String, Object>> filteredResult = lessonConfirmedRepository.findApartWithLessonConfirmed(
+        List<Map<String , Object>> filteredResult = lessonConfirmedRepository.findApartWithLessonConfirmed(
                 year,
                 month,
                 apartId,
-                confirmed,
                 addressId,
                 addressId1,
-                name,
-                unregistered
+                name
         );
+
         int start = Math.max(datatableDto.getStart(), 0);
         int length = Math.max(datatableDto.getLength(), 1);
         int end = Math.min(start + length, filteredResult.size());
-        List<Map<String, Object>> result = start >= filteredResult.size()
+
+
+        List<LessonConfirmedDto> resultList = start >= filteredResult.size()
                 ? List.of()
                 : filteredResult.subList(start, end).stream()
-                .map(row -> {
-                    Map<String, Object> normalized = new HashMap<>(row);
-                    if (normalized.get("confirmed") == null) {
-                        normalized.put("confirmed", "");
-                    }
-                    return normalized;
-                })
+                .map(LessonConfirmedDto::toDto)
                 .toList();
         long recordsTotal = filteredResult.size();
 
         return Response.ok(
-                result,
+                resultList,
                 datatableDto.getDraw(),
                 recordsTotal,
                 recordsTotal

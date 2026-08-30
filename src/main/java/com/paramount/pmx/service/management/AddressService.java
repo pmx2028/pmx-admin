@@ -29,15 +29,22 @@ public class AddressService {
   private final AddressRepository addressRepository;
 
 
-    // 회사 리스트
+    // 지역 리스트
     public ResponseDto getaAddressList(CustomUserDetails userDetails) {
         List<Address> address = addressRepository.findDepthOne();
-        return Response.ok(address);
+        List<AddressDto> addressDtoList = address.stream()
+                .map(AddressDto::from)
+                .toList();
+
+        return Response.ok(addressDtoList);
     }
-    // 역할 조회
+    // 시/군/구 조회
     public ResponseDto getaAddressDepthList(Long addressId , CustomUserDetails userDetails) {
         List<Address> address = addressRepository.findDepthTwo(addressId);
-        return Response.ok(address);
+        List<AddressDto> addressDtoList = address.stream()
+                .map(AddressDto::from)
+                .toList();
+        return Response.ok(addressDtoList);
     }
 
 }

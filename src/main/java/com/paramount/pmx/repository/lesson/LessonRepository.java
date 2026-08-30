@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -16,6 +17,8 @@ public interface LessonRepository extends JpaRepository<Lesson, Long>, JpaSpecif
     List<Lesson> findByYearAndMonthAndWeekdayCodeAndTimeCodeAndApartIdAndCategoryId(String year, String month, Long weekdayCode, String timeCode, Long apartId, Long categoryId);
 
     List<Lesson> findByYearAndMonthAndApartIdAndCategoryId(String year, String month, Long apartId, Long categoryId);
+
+    List<Lesson> findByYearAndMonthAndApartIdAndCategoryIdIn(String year, String month, Long apartId, Collection<Long> categoryIds);
 
     List<Lesson> findByApartId(Long apartId);
 

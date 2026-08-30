@@ -3,25 +3,27 @@
   lesson.html, lesson/confirmed.html 등에서 재사용 가능
   사용법:
     <th:block th:replace="~{partials/search-apart-filters :: search-apart-filters}"></th:block>
+  관리자(4)/직원(3)은 지역/시군구/아파트를 모두 노출, 강사(1)/매니저(2)는 권한 있는 아파트만 노출
 -->
 <th:block th:fragment="search-apart-filters">
-    <!-- 지역 -->
-    <div class="col-6 col-md-4 col-lg-auto">
-        <div class="d-flex align-items-center gap-2">
-            <h5 class="mb-0 text-nowrap">지역</h5>
-            <select class="form-select" id="search-target-depth1">
-            </select>
+    <th:block th:if="${_user != null && (_user.roleId == 3 || _user.roleId == 4)}">
+        <!-- 지역 -->
+        <div class="col-6 col-md-4 col-lg-auto">
+            <div class="d-flex align-items-center gap-2">
+                <h5 class="mb-0 text-nowrap">지역</h5>
+                <select class="form-select" id="search-target-depth1">
+                </select>
+            </div>
         </div>
-    </div>
-
-    <!-- 시군구 -->
-    <div class="col-6 col-md-4 col-lg-auto">
-        <div class="d-flex align-items-center gap-2">
-            <h5 class="mb-0 text-nowrap">시군구</h5>
-            <select class="form-select" id="search-target-depth2">
-            </select>
+        <!-- 시군구 -->
+        <div class="col-6 col-md-4 col-lg-auto">
+            <div class="d-flex align-items-center gap-2">
+                <h5 class="mb-0 text-nowrap">시군구</h5>
+                <select class="form-select" id="search-target-depth2">
+                </select>
+            </div>
         </div>
-    </div>
+    </th:block>
     <!-- 아파트 -->
     <div class="col-6 col-md-8 col-lg-auto">
         <div class="d-flex align-items-center gap-2">

@@ -1,11 +1,13 @@
 package com.paramount.pmx.service.apart;
 
 import com.paramount.pmx.model.DatatableDto;
+import com.paramount.pmx.model.apart.ApartDto;
 import com.paramount.pmx.model.apart.ApartUser;
 import com.paramount.pmx.model.apart.ApartUserDto;
 import com.paramount.pmx.model.enums.CategoryCode;
 import com.paramount.pmx.model.response.Response;
 import com.paramount.pmx.model.response.ResponseDto;
+import com.paramount.pmx.repository.apart.ApartRepository;
 import com.paramount.pmx.repository.apart.ApartUserRepository;
 import com.paramount.pmx.security.CustomUserDetails;
 import com.paramount.pmx.specs.apart.SearchApartUserSpec;
@@ -28,6 +30,7 @@ import java.util.NoSuchElementException;
 public class ApartUserService {
 
     private final ApartUserRepository apartUserRepository;
+    private final ApartRepository apartRepository;
 
     public ResponseDto getAllApartUserList(Map<String, Object> requestParams, CustomUserDetails userDetails) {
         Sort defaultSort = Sort.by(
@@ -53,6 +56,20 @@ public class ApartUserService {
                 recordsTotal,
                 page.getTotalElements()
         );
+    }
+
+    // 로그인한 사용자(강사/매니저)가 등록된 모든 아파트 조회 (중복 제외)
+    public ResponseDto getUserApartList(CustomUserDetails userDetails) {
+        List<Long> apartIds = apartUserRepository.findByUserIdAndActivated(userDetails.getId(), 1).stream()
+                .map(ApartUser::getApartId)
+                .distinct()
+                .toList();
+
+        List<ApartDto> result = apartRepository.findAllById(apartIds).stream()
+                .map(ApartDto::toListDto)
+                .toList();
+
+        return Response.ok(result);
     }
 
     @Transactional

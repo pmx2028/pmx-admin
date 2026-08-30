@@ -1,5 +1,5 @@
 import { loadDataTable } from "../common/datatable-handler.js";
-import { loadLessonApartSelect } from "../common/search-filters.js";
+import { fillSelect, initSearchAddressCascader } from "../common/search-filters.js";
 
 const PageState = {
     selectedApartId: null,
@@ -7,11 +7,49 @@ const PageState = {
 
 document.addEventListener("DOMContentLoaded", async () => {
     initYearMonthSearch();
-    await initSearchAddressCascader();
-    fillSelect("search-target-apart", [], { placeholder: "아파트 선택", placeholderValue: "-" });
+    await initSearchAddressCascader({
+        apartOptions: getLessonApartOptions(),
+        onApartChange: (apartId) => {
+            PageState.selectedApartId = apartId;
+            updateSearchButtonState();
+        },
+    });
     bindSearchEvents();
+    updateSearchButtonState();
     reloadConfirmedTable();
 });
+
+// 연도/월/아파트가 모두 선택되어야 검색 가능
+function canSearch() {
+    const year = getVal("search-year");
+    const month = getVal("search-month");
+    return Boolean(year) && Boolean(month) ;
+    // const apartId = PageState.selectedApartId ?? toNumOrNull(getVal("search-target-apart"));
+    // return Boolean(year) && Boolean(month) && apartId != null;
+}
+
+function updateSearchButtonState() {
+    const btn = $id("btn-search");
+    if (!btn) return;
+
+    const enabled = canSearch();
+    btn.disabled = !enabled;
+    btn.title = enabled ? "" : "연도, 월, 아파트를 모두 선택해 주세요.";
+}
+
+function getLessonApartOptions() {
+    return {
+        apiUrl: "/api/lessons/confirmed/lesson",
+        idKey: "apartId",
+        nameKey: "apartName",
+        length: 200,
+        keywordId: "target-text",
+        extraParams: () => ({
+            search_YEAR_IS: getVal("search-year"),
+            search_MONTH_IS: getVal("search-month"),
+        }),
+    };
+}
 
 function initYearMonthSearch() {
     const now = new Date();
@@ -31,45 +69,42 @@ function initYearMonthSearch() {
     monthSelect.value = String(now.getMonth() + 1).padStart(2, "0");
 }
 
-async function initSearchAddressCascader() {
-    await loadAddressSelect("search-target-depth1", { placeholder: "전체", placeholderValue: "-" });
-    fillSelect("search-target-depth2", [], { placeholder: "전체", placeholderValue: "-" });
-
-    $id("search-target-depth1")?.addEventListener("change", async () => {
-        const addressId = toNumOrNull(getVal("search-target-depth1"));
-        await loadAddress1Select(addressId, "search-target-depth2", { placeholder: "전체", placeholderValue: "-" });
-    });
-
-    // 시군구 선택 시 해당 지역의 아파트 목록으로 갱신
-    $id("search-target-depth2")?.addEventListener("change", async () => {
-        await reloadApartSelect();
-    });
-}
-
 function bindSearchEvents() {
-    const runSearch = async () => {
-        await reloadApartSelect();
+    const runSearch = () => {
+        if (!canSearch()) return;
         reloadConfirmedTable(true);
     };
 
     $id("btn-search")?.addEventListener("click", runSearch);
     $id("btn-reset")?.addEventListener("click", async () => {
         setVal("search-target-depth1", "-");
-        fillSelect("search-target-depth2", [], { placeholder: "전체", placeholderValue: "-" });
         setVal("search-target-apart", "-");
+        fillSelect("search-target-depth2", [], { placeholder: "전체", placeholderValue: "-" });
+        setVal("search-target-lesson-type", "-");
         setVal("search-target-confirmed", "-");
         setVal("target-text", "");
         initYearMonthSearch();
         PageState.selectedApartId = null;
-        await reloadApartSelect();
+        await initSearchAddressCascader({
+            apartOptions: getLessonApartOptions(),
+            onApartChange: (apartId) => {
+                PageState.selectedApartId = apartId;
+                updateSearchButtonState();
+            },
+        });
+        updateSearchButtonState();
         reloadConfirmedTable(true);
     });
 
-    $id("target-text")?.addEventListener("keydown", async (e) => {
+    $id("target-text")?.addEventListener("keydown", (e) => {
         if (e.key !== "Enter") return;
         e.preventDefault();
-        await runSearch();
+        runSearch();
     });
+
+    $id("search-year")?.addEventListener("input", updateSearchButtonState);
+    $id("search-month")?.addEventListener("change", updateSearchButtonState);
+    $id("search-target-apart")?.addEventListener("change", updateSearchButtonState);
 }
 
 function reloadConfirmedTable(resetPage = false) {
@@ -105,7 +140,7 @@ function getConfirmedSearchParams() {
     const apartId = PageState.selectedApartId ?? toNumOrNull(getVal("search-target-apart"));
     const addressId = toNumOrNull(getVal("search-target-depth1"));
     const addressId1 = toNumOrNull(getVal("search-target-depth2"));
-    const confirmed = getVal("search-target-confirmed");
+
     const keyword = getVal("target-text");
     const params = {
         search_YEAR_IS: getVal("search-year"),
@@ -123,14 +158,13 @@ function getConfirmedSearchParams() {
     if (keyword) {
         params.search_NAME_LIKE = keyword;
     }
-    if (confirmed !== "-") {
-        params.search_CONFIRMED_IS = confirmed;
-    }
     return params;
 }
 
 function getConfirmedTableColumns() {
     return [
+        textColumn("addressName", "지역", "8%"),
+        textColumn("addressName1", "시군구", "8%"),
         {
             data: "apartName",
             title: "아파트",
@@ -144,29 +178,12 @@ function getConfirmedTableColumns() {
                 `;
             },
         },
-        textColumn("addressId", "지역", "8%"),
-        textColumn("addressId1", "시군구", "8%"),
         textColumn("year", "연도", "12%"),
         textColumn("month", "월", "10%"),
-        {
-            data: "confirmed",
-            title: "확정여부",
-            width: "14%",
-            render: (value) => {
-                if (Number(value) === 1) {
-                    return '<span class="badge bg-success">확정</span>';
-                }else if (Number(value) === 0) {
-                    return '<span class="badge bg-success">등록</span>';
-                }
-                return '<span class="badge bg-secondary">미등록</span>';
-            },
-        },
-        textColumn("confirmedActivated", "상태", "10%", (value) => {
-            if (value == null) return "-";
-            return Number(value) === 1 ? "사용" : "삭제";
-        }),
-        textColumn("createdAt", "등록일", "18%"),
-        textColumn("updatedAt", "수정일", "18%"),
+        textColumn("gxtuniConfirmedName", "GX/트니트리니" , "10%"),
+        textColumn("healthConfirmedName", "핼스", "10%"),
+        textColumn("golfConfirmedName", "골프" ,"10%"),
+
     ];
 }
 
@@ -205,6 +222,25 @@ function bindConfirmedTableLinkEvents(api) {
     });
 }
 
+function confirmedStatusColumn(data, title) {
+    const badgeClassByStatus = {
+        마감: "bg-success",
+        확정: "bg-success",
+        등록: "bg-success",
+    };
+
+    return {
+        data,
+        title,
+        width: "14%",
+        render: (value) => {
+            const status = value || "미등록";
+            const badgeClass = badgeClassByStatus[status] ?? "bg-secondary";
+            return `<span class="badge ${badgeClass}">${escapeHtml(status)}</span>`;
+        },
+    };
+}
+
 function textColumn(data, title, width, formatter = null) {
     return {
         data,
@@ -216,92 +252,6 @@ function textColumn(data, title, width, formatter = null) {
             return rendered == null || rendered === "" ? "-" : escapeHtml(rendered);
         },
     };
-}
-
-async function reloadApartSelect() {
-    const previousApartId = getVal("search-target-apart");
-    const confirmed = getVal("search-target-confirmed");
-
-    const selectedApartId = await loadLessonApartSelect({
-        extraParams: confirmed !== "-" ? { search_CONFIRMED_IS: confirmed } : {},
-        previousValue: previousApartId,
-    });
-
-    PageState.selectedApartId = selectedApartId;
-}
-
-async function loadAddressSelect(selectId, options = {}) {
-    const resp = await fetchJson("/api/address");
-    const items = normalizeList(resp).map((item) => ({
-        id: item.id,
-        name: item.name,
-    }));
-    fillSelect(selectId, items, { placeholder: "전체", placeholderValue: "-", ...options });
-}
-
-async function loadAddress1Select(addressId, selectId, options = {}) {
-    if (!addressId) {
-        fillSelect(selectId, [], { placeholder: "전체", placeholderValue: "-", ...options });
-        return;
-    }
-
-    const resp = await fetchJson(`/api/address/${addressId}/`);
-    const items = normalizeList(resp).map((item) => ({
-        id: item.id,
-        name: item.name,
-    }));
-    fillSelect(selectId, items, { placeholder: "전체", placeholderValue: "-", ...options });
-}
-
-async function fetchJson(url) {
-    const csrf = getCsrf();
-    const res = await fetch(url, {
-        method: "GET",
-        headers: {
-            Accept: "application/json",
-            ...(csrf ? { [csrf.header]: csrf.token } : {}),
-        },
-        credentials: "include",
-    });
-    const text = await res.text();
-    const data = text ? JSON.parse(text) : null;
-    if (!res.ok) throw new Error(data?.message || `${res.status} ${res.statusText}`);
-    return data;
-}
-
-function getCsrf() {
-    const token = document.querySelector('meta[name="_csrf"]')?.getAttribute("content");
-    const header = document.querySelector('meta[name="_csrf_header"]')?.getAttribute("content") || "X-CSRF-TOKEN";
-    return token ? { header, token } : null;
-}
-
-function normalizeList(resp) {
-    const data = resp?.data ?? [];
-    if (!Array.isArray(data)) return [];
-    return data.map((item) => ({
-        id: item.id ?? item.value ?? item.key,
-        name: item.name ?? item.title ?? String(item.id ?? ""),
-        ...item,
-    }));
-}
-
-function fillSelect(selectId, items, { placeholder = "전체", placeholderValue = "-" } = {}) {
-    const select = $id(selectId);
-    if (!select) return;
-
-    select.innerHTML = "";
-
-    const defaultOption = document.createElement("option");
-    defaultOption.value = placeholderValue;
-    defaultOption.textContent = placeholder;
-    select.appendChild(defaultOption);
-
-    (items || []).forEach((item) => {
-        const option = document.createElement("option");
-        option.value = String(item.id);
-        option.textContent = String(item.name);
-        select.appendChild(option);
-    });
 }
 
 function setVal(id, value) {

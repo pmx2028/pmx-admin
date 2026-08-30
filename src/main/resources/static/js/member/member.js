@@ -1,5 +1,5 @@
 import { loadDataTable } from "../common/datatable-handler.js";
-import { fillSelect, normalizeList, loadAddressSelect, loadAddress1Select } from "../common/search-filters.js";
+import { fillSelect, loadApartSelect, initSearchAddressCascader } from "../common/search-filters.js";
 
 const MemberModalState = {
     mode: "create",
@@ -73,9 +73,10 @@ function bindSearchHandlers() {
     $id("btn-search")?.addEventListener("click", runSearch);
     $id("btn-reset")?.addEventListener("click", async () => {
         setVal("search-target-depth1", "-");
+        setVal("search-target-apart", "-");
         fillSelect("search-target-depth2", [], { placeholder: "전체", placeholderValue: "-" });
-        fillSelect("search-target-apart", [], { placeholder: "아파트 선택", placeholderValue: "-" });
         setVal("target-text", "");
+        await initSearchAddressCascader();
         runSearch();
     });
 
@@ -225,63 +226,15 @@ function getMemberTableColumns() {
     ];
 }
 
-async function initSearchAddressCascader() {
-    await loadAddressSelect("search-target-depth1", { placeholder: "전체", placeholderValue: "-" });
-    fillSelect("search-target-depth2", [], { placeholder: "전체", placeholderValue: "-" });
-    fillSelect("search-target-apart", [], { placeholder: "아파트 선택", placeholderValue: "-" });
-
-    $id("search-target-depth1")?.addEventListener("change", async () => {
-        const addressId = toNumOrNull(getVal("search-target-depth1"));
-        await loadAddress1Select(addressId, "search-target-depth2", { placeholder: "전체", placeholderValue: "-" });
-    });
-
-    // 시군구 선택 시 해당 지역의 아파트 목록으로 갱신
-    $id("search-target-depth2")?.addEventListener("change", async () => {
-        await reloadApartSelect("search-target-apart", { placeholder: "아파트 선택", placeholderValue: "-" });
-    });
-}
-
-async function reloadApartSelect(selectId = "search-target-apart", options = {}) {
-    const {
-        placeholder = "아파트 선택",
-        placeholderValue = "-",
-        useSearchFilters = true,
-    } = options;
-    const previousApartId = getVal(selectId);
-    const params = new URLSearchParams({
-        draw: "1",
-        start: "0",
-        length: "500",
-    });
-
-    if (useSearchFilters) {
-        const addressId = getVal("search-target-depth1");
-        const addressId1 = getVal("search-target-depth2");
-        if (addressId && addressId !== "-") params.set("search_ADDRESS_ID_IS", addressId);
-        if (addressId1 && addressId1 !== "-") params.set("search_ADDRESS1_ID_IS", addressId1);
-    }
-
-    const resp = await fetchJson(`/api/aparts?${params.toString()}`);
-    const items = normalizeList(resp).map((item) => ({
-        id: item.id,
-        name: item.name,
-    }));
-
-    fillSelect(selectId, items, { placeholder, placeholderValue });
-    if (previousApartId && items.some((item) => same(item.id, previousApartId))) {
-        setVal(selectId, previousApartId);
-    }
-}
-
 async function openCreateModal() {
     MemberModalState.mode = "create";
     MemberModalState.memberId = null;
     resetMemberModal();
     paintModalUiByMode();
-    await reloadApartSelect("apartId", {
+    await loadApartSelect({
+        selectId: "apartId",
+        useAddressFilters: false,
         placeholder: "아파트를 선택해 주세요",
-        placeholderValue: "-",
-        useSearchFilters: false,
     });
     setConfirmHandler(handleCreateConfirm);
 }
@@ -294,10 +247,10 @@ async function openEditModal(memberId) {
 
     const detail = await fetchJson(`/api/member/${memberId}`);
     const member = detail?.data ?? {};
-    await reloadApartSelect("apartId", {
+    await loadApartSelect({
+        selectId: "apartId",
+        useAddressFilters: false,
         placeholder: "아파트를 선택해 주세요",
-        placeholderValue: "-",
-        useSearchFilters: false,
     });
 
     setVal("login", member.login ?? "");
