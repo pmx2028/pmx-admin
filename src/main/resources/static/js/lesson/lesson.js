@@ -9,6 +9,8 @@ const PageState = {
     gxTuniCategoryDetailsByParent: new Map(),
     gxTuniApartUsers: [],
     gxTuniApartUsersApartId: null,
+    gxTuniWeekdayOptions: [],
+    gxTuniWeekdayFilter: null,
     lessonRegistered:null,
     lessonConfirmedStatus: null,
     lessonConfirmedId: null,
@@ -48,6 +50,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     bindTabEvents();
     bindBulkSaveEvent();
     bindConfirmedStatusEvent();
+    bindGxTuniWeekdayFilterEvents();
     bindLessonApplyEvent();
     bindOrderConfirmModalEvents();
     updateSearchButtonState();
@@ -132,6 +135,8 @@ function bindSearchEvents() {
         PageState.selectedApartId = null;
         PageState.gxTuniApartUsers = [];
         PageState.gxTuniApartUsersApartId = null;
+        PageState.gxTuniWeekdayOptions = [];
+        PageState.gxTuniWeekdayFilter = null;
         await initSearchAddressCascader({
             apartOptions: getLessonApartOptions(),
             onApartChange: (apartId) => {
@@ -148,6 +153,8 @@ function bindSearchEvents() {
         PageState.selectedApartId = toNumOrNull(getVal("search-target-apart"));
         PageState.gxTuniApartUsers = [];
         PageState.gxTuniApartUsersApartId = null;
+        PageState.gxTuniWeekdayOptions = [];
+        PageState.gxTuniWeekdayFilter = null;
         updateSearchButtonState();
     });
 
@@ -165,6 +172,7 @@ function bindTabEvents() {
             document.querySelectorAll("[data-lesson-tab]").forEach((item) => {
                 item.classList.toggle("active", item === tab);
             });
+            PageState.gxTuniWeekdayFilter = null;
             await reloadLessonConfirmedStatus();
             void reloadLessonTable(true);
         });
@@ -336,10 +344,14 @@ function getLessonOrderName(row) {
 }
 
 async function ensureLessonTabResources() {
-    if (PageState.activeTab !== "gxtuni") return;
+    if (PageState.activeTab !== "gxtuni") {
+        renderGxTuniWeekdayFilterOptions();
+        return;
+    }
 
     await loadCategories();
     await loadGxTuniApartUsers();
+    renderGxTuniWeekdayFilterOptions();
 }
 
 async function reloadLessonTable(resetPage = false) {
@@ -364,6 +376,7 @@ async function reloadLessonTable(resetPage = false) {
     const drawCallbacks = [applyLessonConfirmedLock];
     if (PageState.activeTab === "gxtuni") {
         drawCallbacks.unshift(bindGxTuniTableEvents);
+        drawCallbacks.push(applyGxTuniWeekdayFilter);
     }
 
     loadDataTable({
@@ -735,6 +748,8 @@ async function loadGxTuniApartUsers() {
     if (!apartId) {
         PageState.gxTuniApartUsers = [];
         PageState.gxTuniApartUsersApartId = null;
+        PageState.gxTuniWeekdayOptions = [];
+        PageState.gxTuniWeekdayFilter = null;
         return;
     }
     if (Number(PageState.gxTuniApartUsersApartId) === Number(apartId)) return;
@@ -749,6 +764,81 @@ async function loadGxTuniApartUsers() {
     const resp = await fetchJson(`/api/apart-user?${params.toString()}`);
     PageState.gxTuniApartUsers = normalizeList(resp);
     PageState.gxTuniApartUsersApartId = apartId;
+    PageState.gxTuniWeekdayOptions = buildGxTuniWeekdayOptions(PageState.gxTuniApartUsers);
+    PageState.gxTuniWeekdayFilter = null;
+}
+
+// gxTuniApartUsers 원본은 그대로 두고, weekdayCodes/weekdayNames 값을 code-name 쌍으로 중복 제거해 별도로 보관
+function buildGxTuniWeekdayOptions(users) {
+    const optionsByCode = new Map();
+
+    users.forEach((user) => {
+        if (user.weekdayCodes == null) return;
+
+        const codes = String(user.weekdayCodes)
+            .split(",")
+            .map((value) => value.trim())
+            .filter((value) => value !== "");
+        const names = user.weekdayNames == null
+            ? []
+            : String(user.weekdayNames)
+                  .split("/")
+                  .map((value) => value.trim())
+                  .filter((value) => value !== "");
+
+        codes.forEach((code, index) => {
+            if (!optionsByCode.has(code)) {
+                optionsByCode.set(code, names[index] ?? code);
+            }
+        });
+    });
+
+    return Array.from(optionsByCode, ([code, name]) => ({ code, name })).sort(
+        (a, b) => Number(a.code) - Number(b.code)
+    );
+}
+
+function renderGxTuniWeekdayFilterOptions() {
+    const select = $id("gx-weekday-filter-select");
+    if (!select) return;
+
+    const options = PageState.gxTuniWeekdayOptions;
+    if (PageState.activeTab !== "gxtuni" || options.length === 0) {
+        select.classList.add("d-none");
+        select.innerHTML = "";
+        return;
+    }
+
+    select.classList.remove("d-none");
+    select.innerHTML = [
+        optionHtml("", "전체", PageState.gxTuniWeekdayFilter == null),
+        ...options.map((option) =>
+            optionHtml(option.code, option.name, sameId(option.code, PageState.gxTuniWeekdayFilter))
+        ),
+    ].join("");
+}
+
+function bindGxTuniWeekdayFilterEvents() {
+    $id("gx-weekday-filter-select")?.addEventListener("change", (event) => {
+        const code = event.target.value;
+        PageState.gxTuniWeekdayFilter = code === "" ? null : code;
+        applyGxTuniWeekdayFilter();
+    });
+}
+
+function applyGxTuniWeekdayFilter() {
+    const $table = $("#lessonDataTable");
+    if (!$.fn.DataTable.isDataTable($table)) return;
+
+    const table = $table.DataTable();
+    const filter = PageState.gxTuniWeekdayFilter;
+
+    table.rows().every(function () {
+        const data = this.data();
+        const rowWeekdayCode = data?.weekdayCode ?? data?.weekdaycode;
+        const matches = filter == null || sameId(rowWeekdayCode, filter);
+        $(this.node()).toggle(matches);
+    });
 }
 
 function getGxTuniTableColumns() {
