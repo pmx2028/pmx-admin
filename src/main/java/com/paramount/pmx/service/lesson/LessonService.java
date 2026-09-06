@@ -344,68 +344,89 @@ public class LessonService {
         String year = parseString(getRequestValue(requestParams, "YEAR_IS", "year"));
         String month = parseString(getRequestValue(requestParams, "MONTH_IS", "month"));
         Long apartId = parseLong(getRequestValue(requestParams, "APART_ID_IS", "apartId"));
-        String lessonType = parseString(getRequestValue(requestParams, "LESSON_TYPE_IS", "lessonType"));
+        Long categoryId = parseLong(getRequestValue(requestParams, "CATEGORY_ID_IS", "categoryId"));
 
-        if (year == null || month == null || apartId == null || lessonType == null) {
+        if (year == null || month == null || apartId == null || categoryId == null) {
             throw new IllegalArgumentException("년, 월, 아파트 ,  강습 정보가 필요합니다.");
         }
-        List<Lesson> lessonList = null;
         Boolean lessonRegistered = false;
-        if (lessonType.equals("gxtuni")) {
-            List<Long> categoryIds = List.of(CategoryCode.GX.getCode(), CategoryCode.TUNI.getCode());
-            lessonList = lessonRepository.findByYearAndMonthAndApartIdAndCategoryIdIn(year, month, apartId , categoryIds);
-        } else if (lessonType.equals("health")) {
-            long categoryId = CategoryCode.HEALTH.getCode();;
-            lessonList = lessonRepository.findByYearAndMonthAndApartIdAndCategoryId(year, month, apartId , categoryId);
-        } else if (lessonType.equals("golf")) {
-            long categoryId = CategoryCode.GOLF.getCode();
-            lessonList = lessonRepository.findByYearAndMonthAndApartIdAndCategoryId(year, month, apartId , categoryId);
-        }
+        List<Lesson> lessonList = lessonRepository.findByYearAndMonthAndApartIdAndCategoryId(year, month, apartId , categoryId);
+
 
         if (! lessonList.isEmpty()) {
             lessonRegistered = true;
         }
 
-        List<LessonConfirmed> lessonConfirmedList = lessonConfirmedRepository.findByYearAndMonthAndApartIdAndLessonType(year, month, apartId , lessonType);
-        if (lessonConfirmedList.isEmpty()) {
+        LessonConfirmed lessonConfirmed = lessonConfirmedRepository.findByYearAndMonthAndApartIdAndCategoryId(year, month, apartId , categoryId);
+        if (lessonConfirmed == null) {
             return Response.ok(LessonConfirmedDto.builder()
                     .id(null)
                     .year(year)
                     .month(month)
-                    .lessonType(lessonType)
+                    .categoryId(categoryId)
                     .apartId(apartId)
                     .confirmed(null)
                     .lessonRegistered(lessonRegistered)
                     .build());
         }
 
-        return Response.ok(LessonConfirmedDto.toDto(lessonConfirmedList.get(0),lessonRegistered));
+        return Response.ok(LessonConfirmedDto.toDto(lessonConfirmed,lessonRegistered));
     }
 
 
     @Transactional
     public ResponseDto createLessonConfirmed(LessonConfirmedDto reqDto, CustomUserDetails userDetails) {
+        List<Long> categoryIds = parseCategoryIds(reqDto.getCategoryIdStr());
+        if (categoryIds.isEmpty()) {
+            throw new IllegalArgumentException("강습 카테고리 정보가 필요합니다.");
+        }
 
-        LessonConfirmed lessonConfirmed = LessonConfirmed.builder()
-                .year(reqDto.getYear())
-                .month(reqDto.getMonth())
-                .apartId(reqDto.getApartId())
-                .lessonType(reqDto.getLessonType())
-                .confirmed(reqDto.getConfirmed() == null ? 0 : reqDto.getConfirmed())
-                .activated(reqDto.getActivated() == null ? 1 : reqDto.getActivated())
-                .build();
-        lessonConfirmedRepository.save(lessonConfirmed);
+        for (Long categoryId : categoryIds) {
+            LessonConfirmed lessonConfirmed = LessonConfirmed.builder()
+                    .year(reqDto.getYear())
+                    .month(reqDto.getMonth())
+                    .apartId(reqDto.getApartId())
+                    .categoryId(categoryId)
+                    .confirmed(reqDto.getConfirmed() == null ? 0 : reqDto.getConfirmed())
+                    .activated(reqDto.getActivated() == null ? 1 : reqDto.getActivated())
+                    .build();
+            lessonConfirmedRepository.save(lessonConfirmed);
+        }
         return Response.ok(true);
     }
 
+
     @Transactional
     public ResponseDto updateLessonConfirmed(Long lessonConfirmedId, LessonConfirmedDto reqDto, CustomUserDetails userDetails) {
-        LessonConfirmed lessonConfirmed = lessonConfirmedRepository.findById(lessonConfirmedId)
+
+        lessonConfirmedRepository.findById(lessonConfirmedId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 강습확정을 찾을 수 없습니다."));
 
-        lessonConfirmed.setConfirmed(reqDto.getConfirmed() == null ? lessonConfirmed.getConfirmed() : reqDto.getConfirmed());
+        List<Long> categoryIds = parseCategoryIds(reqDto.getCategoryIdStr());
+        if (categoryIds.isEmpty()) {
+            throw new IllegalArgumentException("강습 카테고리 정보가 필요합니다.");
+        }
 
-        lessonConfirmedRepository.save(lessonConfirmed);
+        for (Long categoryId : categoryIds) {
+            LessonConfirmed lessonConfirmed = lessonConfirmedRepository.findByYearAndMonthAndApartIdAndCategoryId(
+                    reqDto.getYear(), reqDto.getMonth(), reqDto.getApartId(), categoryId);
+
+            if (lessonConfirmed == null) {
+                // GX/트니트니 통합 탭처럼 categoryId가 여러개 넘어올 때, 그 중 아직 등록되지 않은 카테고리가 있으면 새로 생성
+                lessonConfirmed = LessonConfirmed.builder()
+                        .year(reqDto.getYear())
+                        .month(reqDto.getMonth())
+                        .apartId(reqDto.getApartId())
+                        .categoryId(categoryId)
+                        .confirmed(reqDto.getConfirmed() == null ? 0 : reqDto.getConfirmed())
+                        .activated(reqDto.getActivated() == null ? 1 : reqDto.getActivated())
+                        .build();
+            } else {
+                lessonConfirmed.setConfirmed(reqDto.getConfirmed() == null ? lessonConfirmed.getConfirmed() : reqDto.getConfirmed());
+            }
+
+            lessonConfirmedRepository.save(lessonConfirmed);
+        }
 
         return Response.ok(true);
     }
@@ -519,6 +540,18 @@ public class LessonService {
             return directSearchValue;
         }
         return requestParams.get(plainKey);
+    }
+
+    // categoryId가 "1,4"처럼 콤마로 여러개 넘어오는 경우(예: GX/트니트니 통합 탭)를 대비해 파싱
+    private List<Long> parseCategoryIds(String categoryIdstr) {
+        if (categoryIdstr == null || categoryIdstr.isBlank()) {
+            return List.of();
+        }
+        return Arrays.stream(categoryIdstr.split(","))
+                .map(String::trim)
+                .filter(v -> !v.isEmpty())
+                .map(Long::valueOf)
+                .toList();
     }
 
     private String parseString(Object value) {

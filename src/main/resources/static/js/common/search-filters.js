@@ -93,6 +93,11 @@ export async function loadApartSelect({
         return null;
     }
 
+    if (!apiUrl) {
+        fillSelect(selectId, [], { placeholder, placeholderValue: "-" });
+        return null;
+    }
+
     const resolvedExtraParams = typeof extraParams === "function" ? extraParams() : extraParams;
     const params = new URLSearchParams({
         draw: "1",
@@ -196,8 +201,7 @@ export async function initSearchAddressCascader({
             const addressId = toNumOrNull(getVal(depth1Id));
             await loadAddress1Select(addressId, depth2Id, { placeholder: "전체", placeholderValue: "-" });
             if (hasApartSelect) {
-                fillSelect(apartId, [], { placeholder: apartOptions.placeholder ?? "아파트 선택", placeholderValue: "-" });
-                onApartChange?.(null);
+                await reloadApart(null);
             }
         };
     }

@@ -52,7 +52,7 @@ public class LessonConfirmed {
     private Long apartId;
 
     @Column
-    private String lessonType;
+    private Long categoryId;
 
     @Column(nullable = false)
     private Integer confirmed;

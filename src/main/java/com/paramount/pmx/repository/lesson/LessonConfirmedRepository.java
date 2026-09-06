@@ -11,7 +11,7 @@ import java.util.Map;
 
 public interface LessonConfirmedRepository extends JpaRepository<LessonConfirmed, Long>, JpaSpecificationExecutor<LessonConfirmed> {
 
-    List<LessonConfirmed> findByYearAndMonthAndApartIdAndLessonType(String year, String month, Long apartId , String lessonType);
+    LessonConfirmed findByYearAndMonthAndApartIdAndCategoryId(String year, String month, Long apartId , Long categoryId);
 
     // 아파트 목록(Specification/Page) 조회 후 강습확정 정보를 배치로 병합할 때 사용
     List<LessonConfirmed> findByYearAndMonthAndApartIdIn(String year, String month, List<Long> apartIds);
@@ -33,15 +33,15 @@ public interface LessonConfirmedRepository extends JpaRepository<LessonConfirmed
                    WHERE lc.apart_id  = a.id
                      AND lc.year = :year
                      AND lc.month = :month
-                     AND lc.lesson_type = 'gxtuni'
-               ), ''   ) AS gxtuniConfirmed ,
+                     AND lc.category_id = 1
+               ), ''   ) AS gxConfirmed ,
           COALESCE(
                (SELECT lc.confirmed
                    FROM lesson_confirmed lc
                   WHERE lc.apart_id  = a.id
                      AND lc.year = :year
                      AND lc.month = :month
-                     AND lc.lesson_type = 'health'
+                     AND lc.category_id = 2
                ), ''   ) AS healthConfirmed ,
           COALESCE(
                (SELECT lc.confirmed
@@ -49,8 +49,16 @@ public interface LessonConfirmedRepository extends JpaRepository<LessonConfirmed
                    WHERE lc.apart_id  = a.id
                      AND lc.year = :year
                      AND lc.month = :month
-                     AND lc.lesson_type = 'golf'
-               ), ''   ) AS golfConfirmed
+                     AND lc.category_id = 3
+               ), ''   ) AS golfConfirmed , 
+          COALESCE(
+               (SELECT lc.confirmed
+                   FROM lesson_confirmed lc
+                   WHERE lc.apart_id  = a.id
+                     AND lc.year = :year
+                     AND lc.month = :month
+                     AND lc.category_id =4
+               ), ''   ) AS tuniConfirmed         
        FROM aparts a
        LEFT JOIN addresses ad
            ON ad.id = a.address_id

@@ -28,6 +28,9 @@ public class LessonConfirmedDto {
     private String month;
     private Long apartId;
     private String apartName;
+    private Long categoryId;
+    private String categoryIdStr;
+    private Long categoryName;
     private Long addressId;
     private String addressName;
     private Long addressId1;
@@ -36,12 +39,14 @@ public class LessonConfirmedDto {
     private String lessonType;
     private Integer confirmed;
     private Integer activated;
-    private String gxtuniConfirmed;
+    private String gxConfirmed;
     private String healthConfirmed;
     private String golfConfirmed;
-    private String gxtuniConfirmedName;
+    private String tuniConfirmed;
+    private String gxConfirmedName;
     private String healthConfirmedName;
     private String golfConfirmedName;
+    private String tuniConfirmedName;
     private String createdAt;
     private String updatedAt;
     private Boolean lessonRegistered;
@@ -56,7 +61,7 @@ public class LessonConfirmedDto {
                 .year(lessonConfirmed.getYear())
                 .month(lessonConfirmed.getMonth())
                 .apartId(lessonConfirmed.getApartId())
-                .lessonType(lessonConfirmed.getLessonType())
+                .categoryId(lessonConfirmed.getCategoryId())
                 .confirmed(lessonConfirmed.getConfirmed())
                 .activated(lessonConfirmed.getActivated())
                 .lessonRegistered(lessonRegistered)
@@ -83,6 +88,8 @@ public class LessonConfirmedDto {
                 .year(toStringValue(row.get("year")))
                 .month(toStringValue(row.get("month")))
                 .apartId(toLong(row.get("apartId")))
+                .categoryId(toLong(row.get("categoryId")))
+                .categoryName(toLong(row.get("categoryName")))
                 .apartName(toStringValue(row.get("apartName")))
                 .addressId(toLong(row.get("id")))
                 .addressName(toStringValue(row.get("addressName")))
@@ -90,12 +97,14 @@ public class LessonConfirmedDto {
                 .addressName1(toStringValue(row.get("addressName1")))
                 .apartActivated(toInteger(row.get("apartActivated")))
                 .activated(toInteger(row.get("activated")))
-                .gxtuniConfirmed(toStringValue(row.get("gxtuniConfirmed")))
-                .gxtuniConfirmedName(Confirmed.getDescription(toStringValue(row.get("gxtuniConfirmed"))))
+                .gxConfirmed(toStringValue(row.get("gxConfirmed")))
+                .gxConfirmedName(Confirmed.getDescription(toStringValue(row.get("gxConfirmed"))))
                 .healthConfirmed(toStringValue(row.get("healthConfirmed")))
                 .healthConfirmedName(Confirmed.getDescription(toStringValue(row.get("healthConfirmed"))))
                 .golfConfirmed(toStringValue(row.get("golfConfirmed")))
                 .golfConfirmedName(Confirmed.getDescription(toStringValue(row.get("golfConfirmed"))))
+                .tuniConfirmed(toStringValue(row.get("tuniConfirmed")))
+                .tuniConfirmedName(Confirmed.getDescription(toStringValue(row.get("tuniConfirmed"))))
                 .build();
 
 

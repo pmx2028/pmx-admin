@@ -3,6 +3,8 @@ package com.paramount.pmx.model.enums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.Arrays;
+
 @Getter
 @AllArgsConstructor
 public enum CategoryCode {
@@ -13,5 +15,15 @@ public enum CategoryCode {
 
     private final Long code;
     private final String description;
+    public static CategoryCode fromCode(Long code) {
+        if (code == null) {
+            return null;
+        }
+
+        return Arrays.stream(values())
+                .filter(v -> v.getCode().equals(code))
+                .findFirst()
+                .orElse(null);
+    }
 
 }

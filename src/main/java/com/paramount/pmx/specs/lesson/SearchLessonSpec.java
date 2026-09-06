@@ -92,7 +92,17 @@ public class SearchLessonSpec {
                         break;
 
                     case CATEGORY_ID_IS:
-                        predicate.add(builder.equal(root.get("categoryId"), keyValue));
+                        // 콤마로 여러 categoryId가 넘어올 수 있음 (예: GX/트니트니 탭 = "1,4")
+                        List<Long> categoryIds = Arrays.stream(keyValue.split(","))
+                                .map(String::trim)
+                                .filter(v -> !v.isEmpty())
+                                .map(Long::valueOf)
+                                .toList();
+                        if (categoryIds.size() == 1) {
+                            predicate.add(builder.equal(root.get("categoryId"), categoryIds.get(0)));
+                        } else if (categoryIds.size() > 1) {
+                            predicate.add(root.get("categoryId").in(categoryIds));
+                        }
                         break;
                     case CATEGORY_ID1_IS:
                         predicate.add(builder.equal(root.get("categoryId1"), keyValue));

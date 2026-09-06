@@ -33,3 +33,40 @@
         </div>
     </div>
 </th:block>
+
+<!--
+  아파트 검색영역 공통 fragment - 폼(등록/수정 모달)용 - 지역/시군구/아파트
+  검색바가 아닌 등록/수정 모달의 "라벨(col-3) : 입력값(col-9)" 행 레이아웃에서 사용
+  member.html(회원가입) 등에서 재사용 가능
+  사용법:
+    <th:block th:replace="~{partials/search-apart-filters :: search-apart-filters-form('member-modal-depth1', 'member-modal-depth2', 'apartId')}"></th:block>
+  관리자(4)/직원(3)은 지역/시군구/아파트를 모두 노출, 강사(1)/매니저(2)는 권한 있는 아파트만 노출
+-->
+<th:block th:fragment="search-apart-filters-form(depth1Id, depth2Id, apartId)">
+    <th:block th:if="${_user != null && (_user.roleId == 3 || _user.roleId == 4)}">
+        <!-- 지역 -->
+        <div class="row mb-2">
+            <div class="col-3">지역</div>
+            <div class="col-9">
+                <select class="form-select" th:id="${depth1Id}">
+                </select>
+            </div>
+        </div>
+        <!-- 시군구 -->
+        <div class="row mb-2">
+            <div class="col-3">시군구</div>
+            <div class="col-9">
+                <select class="form-select" th:id="${depth2Id}">
+                </select>
+            </div>
+        </div>
+    </th:block>
+    <!-- 아파트 -->
+    <div class="row mb-2">
+        <div class="col-3">아파트</div>
+        <div class="col-9">
+            <select class="form-select" th:id="${apartId}">
+            </select>
+        </div>
+    </div>
+</th:block>

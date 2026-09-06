@@ -180,9 +180,10 @@ function getConfirmedTableColumns() {
         },
         textColumn("year", "연도", "12%"),
         textColumn("month", "월", "10%"),
-        textColumn("gxtuniConfirmedName", "GX/트니트리니" , "10%"),
+        textColumn("gxConfirmedName", "GX" , "10%"),
         textColumn("healthConfirmedName", "핼스", "10%"),
         textColumn("golfConfirmedName", "골프" ,"10%"),
+        textColumn("tuniConfirmedName", "트니트니" , "10%"),
 
     ];
 }

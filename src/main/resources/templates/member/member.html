@@ -152,13 +152,8 @@
                                     <input type="text" class="form-control mb-2" id="mobile" placeholder="휴대폰 번호를 입력해 주세요">
                                 </div>
                             </div>
-                            <div class="row mb-2">
-                                <div class="col-3 ">주소(아파트)</div>
-                                <div class="col-9">
-                                    <select class="form-select" id="apartId" aria-label="">
-                                    </select>
-                                </div>
-                            </div>
+                            <!-- 지역/시군구/아파트 선택영역 (공통 fragment) -->
+                            <th:block th:replace="~{partials/search-apart-filters :: search-apart-filters-form('member-modal-depth1', 'member-modal-depth2', 'apartId')}"></th:block>
                             <div class="row">
                                 <div class="col-3 ">상세주소(동/호)</div>
                                 <div class="col-9">

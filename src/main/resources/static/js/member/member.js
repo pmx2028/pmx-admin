@@ -1,5 +1,11 @@
 import { loadDataTable } from "../common/datatable-handler.js";
-import { fillSelect, loadApartSelect, initSearchAddressCascader } from "../common/search-filters.js";
+import { fillSelect, initSearchAddressCascader } from "../common/search-filters.js";
+
+const MEMBER_MODAL_ADDRESS_IDS = {
+    depth1Id: "member-modal-depth1",
+    depth2Id: "member-modal-depth2",
+    apartId: "apartId",
+};
 
 const MemberModalState = {
     mode: "create",
@@ -231,10 +237,9 @@ async function openCreateModal() {
     MemberModalState.memberId = null;
     resetMemberModal();
     paintModalUiByMode();
-    await loadApartSelect({
-        selectId: "apartId",
-        useAddressFilters: false,
-        placeholder: "아파트를 선택해 주세요",
+    await initSearchAddressCascader({
+        ...MEMBER_MODAL_ADDRESS_IDS,
+        apartOptions: { placeholder: "아파트를 선택해 주세요" },
     });
     setConfirmHandler(handleCreateConfirm);
 }
@@ -247,17 +252,16 @@ async function openEditModal(memberId) {
 
     const detail = await fetchJson(`/api/member/${memberId}`);
     const member = detail?.data ?? {};
-    await loadApartSelect({
-        selectId: "apartId",
-        useAddressFilters: false,
-        placeholder: "아파트를 선택해 주세요",
+    await initSearchAddressCascader({
+        ...MEMBER_MODAL_ADDRESS_IDS,
+        initialApartValue: member.apartId,
+        apartOptions: { placeholder: "아파트를 선택해 주세요" },
     });
 
     setVal("login", member.login ?? "");
     setVal("name", member.name ?? "");
     setVal("email", member.email ?? "");
     setVal("mobile", member.mobile ?? "");
-    setVal("apartId", member.apartId == null ? "-" : String(member.apartId));
     setVal("address", member.address ?? "");
     setVal("zipcode", member.zipcode ?? "");
     setVal("birthday", member.birthday ?? "");

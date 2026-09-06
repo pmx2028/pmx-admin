@@ -20,7 +20,7 @@ const PageState = {
 const TAB_CONFIG = {
     gxtuni: {
         ajaxUrl: "/api/lessons/gxtuni",
-        categoryId: null,
+        categoryId: [1, 4],
         columnsFn: getGxTuniTableColumns,
     },
     health: {
@@ -38,14 +38,6 @@ const TAB_CONFIG = {
 document.addEventListener("DOMContentLoaded", async () => {
     initYearMonthSearch();
     applySearchParamsFromUrl();
-    await initSearchAddressCascader({
-        apartOptions: getLessonApartOptions(),
-        initialApartValue: PageState.selectedApartId,
-        onApartChange: (apartId) => {
-            PageState.selectedApartId = apartId;
-            updateSearchButtonState();
-        },
-    });
     bindSearchEvents();
     bindTabEvents();
     bindBulkSaveEvent();
@@ -53,39 +45,26 @@ document.addEventListener("DOMContentLoaded", async () => {
     bindGxTuniWeekdayFilterEvents();
     bindLessonApplyEvent();
     bindOrderConfirmModalEvents();
-    updateSearchButtonState();
-    await reloadLessonConfirmedStatus();
-    void reloadLessonTable(true);
+    await initSearchAddressCascader({
+        initialApartValue: PageState.selectedApartId,
+        onApartChange: handleApartSelectionChange,
+    });
 });
 
-// 연도/월/아파트가 모두 선택되어야 검색 가능
-function canSearch() {
-    const year = getVal("search-year");
-    const month = getVal("search-month");
-    const apartId = PageState.selectedApartId ?? toNumOrNull(getVal("search-target-apart"));
-    return Boolean(year) && Boolean(month) && apartId != null;
+// 아파트 관련 하위 상태(강사목록/요일필터 등) 초기화 - 아파트가 바뀌면 이전 아파트 기준 데이터는 무효화되어야 함
+function resetGxTuniApartUserState() {
+    PageState.gxTuniApartUsers = [];
+    PageState.gxTuniApartUsersApartId = null;
+    PageState.gxTuniWeekdayOptions = [];
+    PageState.gxTuniWeekdayFilter = null;
 }
 
-function updateSearchButtonState() {
-    const btn = $id("btn-search");
-    if (!btn) return;
-
-    const enabled = canSearch();
-    btn.disabled = !enabled;
-    btn.title = enabled ? "" : "연도, 월, 아파트를 모두 선택해 주세요.";
-}
-
-function getLessonApartOptions() {
-    return {
-        apiUrl: "/api/lessons/confirmed/lesson",
-        idKey: "apartId",
-        nameKey: "apartName",
-        length: 200,
-        extraParams: () => ({
-            search_YEAR_IS: getVal("search-year"),
-            search_MONTH_IS: getVal("search-month"),
-        }),
-    };
+// 아파트 선택(직접 변경/지역·시군구 변경으로 인한 재조회/초기화 등)이 바뀔 때마다 공통으로 타는 지점
+async function handleApartSelectionChange(apartId) {
+    PageState.selectedApartId = apartId;
+    resetGxTuniApartUserState();
+    await reloadLessonConfirmedStatus();
+    void reloadLessonTable(true);
 }
 
 function initYearMonthSearch() {
@@ -120,46 +99,30 @@ function applySearchParamsFromUrl() {
 }
 
 function bindSearchEvents() {
-    const runSearch = async () => {
-        if (!canSearch()) return;
-        await reloadLessonConfirmedStatus();
-        void reloadLessonTable(true);
-    };
-
-    $id("btn-search")?.addEventListener("click", runSearch);
     $id("btn-reset")?.addEventListener("click", async () => {
         setVal("search-target-depth1", "-");
         setVal("search-target-apart", "-");
         fillSelect("search-target-depth2", [], { placeholder: "전체", placeholderValue: "-" });
         initYearMonthSearch();
-        PageState.selectedApartId = null;
-        PageState.gxTuniApartUsers = [];
-        PageState.gxTuniApartUsersApartId = null;
-        PageState.gxTuniWeekdayOptions = [];
-        PageState.gxTuniWeekdayFilter = null;
         await initSearchAddressCascader({
-            apartOptions: getLessonApartOptions(),
-            onApartChange: (apartId) => {
-                PageState.selectedApartId = apartId;
-                updateSearchButtonState();
-            },
+            //apartOptions: getLessonApartOptions(),
+            onApartChange: handleApartSelectionChange,
         });
-        updateSearchButtonState();
-        await reloadLessonConfirmedStatus();
-        void reloadLessonTable(true);
     });
 
     $id("search-target-apart")?.addEventListener("change", () => {
-        PageState.selectedApartId = toNumOrNull(getVal("search-target-apart"));
-        PageState.gxTuniApartUsers = [];
-        PageState.gxTuniApartUsersApartId = null;
-        PageState.gxTuniWeekdayOptions = [];
-        PageState.gxTuniWeekdayFilter = null;
-        updateSearchButtonState();
+        void handleApartSelectionChange(toNumOrNull(getVal("search-target-apart")));
     });
 
-    $id("search-year")?.addEventListener("input", updateSearchButtonState);
-    $id("search-month")?.addEventListener("change", updateSearchButtonState);
+    // 연도/월은 아파트 목록과 무관하므로 아파트 선택은 유지하고, 선택되어 있으면 그 값으로 바로 재조회
+    // (아파트가 선택되어 있지 않으면 reloadLessonConfirmedStatus/reloadLessonTable 내부 가드에서 결과가 초기화됨)
+    $id("search-year")?.addEventListener("input", handleSearchYearMonthChange);
+    $id("search-month")?.addEventListener("change", handleSearchYearMonthChange);
+}
+
+function handleSearchYearMonthChange() {
+    void reloadLessonConfirmedStatus();
+    void reloadLessonTable(true);
 }
 
 function bindTabEvents() {
@@ -344,8 +307,7 @@ function getLessonOrderName(row) {
 }
 
 async function ensureLessonTabResources() {
-    if (PageState.activeTab !== "gxtuni") {
-        renderGxTuniWeekdayFilterOptions();
+    if (PageState.activeTab !== "gxtuni")  {
         return;
     }
 
@@ -358,6 +320,19 @@ async function reloadLessonTable(resetPage = false) {
     const tableId = "lessonDataTable";
     const $table = $(`#${tableId}`);
     const config = TAB_CONFIG[PageState.activeTab] ?? TAB_CONFIG.gxtuni;
+
+    // 년, 월, 아파트ID, 카테고리ID가 모두 있어야 /api/lessons/gxtuni, /api/lessons/healthgolf 조회가 가능
+    const apartId = PageState.selectedApartId ?? toNumOrNull(getVal("search-target-apart"));
+    const year = getVal("search-year");
+    const month = getVal("search-month");
+    const categoryId = config.categoryId;
+    if (!year || !month || !apartId || !categoryId) {
+        if ($.fn.DataTable.isDataTable($table)) {
+            $table.DataTable().clear().draw();
+        }
+        return;
+    }
+
     await ensureLessonTabResources();
 
     if ($.fn.DataTable.isDataTable($table)) {
@@ -410,7 +385,9 @@ function getLessonSearchParams() {
     };
 
     if (config.categoryId != null) {
-        params.search_CATEGORY_ID_IS = config.categoryId;
+        params.search_CATEGORY_ID_IS = Array.isArray(config.categoryId)
+            ? config.categoryId.join(",")
+            : config.categoryId;
     }
 
     return params;
@@ -507,9 +484,13 @@ async function reloadLessonConfirmedStatus() {
     const apartId = PageState.selectedApartId ?? toNumOrNull(getVal("search-target-apart"));
     const year = getVal("search-year");
     const month = getVal("search-month");
-    const lessonType = PageState.activeTab;
+    const config = TAB_CONFIG[PageState.activeTab] ?? TAB_CONFIG.gxtuni;
+    let categoryId = config.categoryId;
+    if (PageState.activeTab === "gxtuni") {
+        categoryId = 1;
+    }
 
-    if (!apartId || !year || !month || !lessonType) {
+    if (!apartId || !year || !month || !categoryId) {
         PageState.lessonConfirmedStatus = null;
         PageState.lessonConfirmedId = null;
         btn.classList.add("d-none");
@@ -527,7 +508,7 @@ async function reloadLessonConfirmedStatus() {
             year,
             month,
             apartId: String(apartId),
-            lessonType: lessonType,
+            categoryId: categoryId,
         });
         const resp = await fetchJson(`/api/lessons/confirmed?${params.toString()}`);
         const confirmed = resp?.data?.confirmed ?? null;
@@ -590,9 +571,12 @@ function getLessonConfirmedPayload() {
 
     const year = getVal("search-year");
     const month = getVal("search-month");
-    const lessonType = PageState.activeTab;
 
-    if (!apartId || !year || !month || !lessonType) {
+    const config = TAB_CONFIG[PageState.activeTab] ?? TAB_CONFIG.gxtuni;
+    const categoryId = config.categoryId;
+
+
+    if (!apartId || !year || !month || !categoryId) {
         return null;
     }
 
@@ -600,7 +584,7 @@ function getLessonConfirmedPayload() {
         year,
         month,
         apartId,
-        lessonType
+        categoryIdStr: Array.isArray(categoryId) ? categoryId.join(",") : String(categoryId),
     };
 }
 
